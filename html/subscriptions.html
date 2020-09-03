@@ -1,0 +1,73 @@
+{% extends "layout.html" %}
+
+{% block head %}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css">
+<script src="{{ url_for('.static', filename='js/subscriptions.js') }}" async></script>
+{% endblock %}
+
+
+{% block body %}
+<form method="POST" action="addsubscription">
+    <label for="subscriptiontype">Load subscription</label>
+    <select name="subscriptiontype" id="subscriptiontype" onchange='updateSubscription("{{ id }}", "{{ endpoint }}")'>
+        <option disabled selected value>Select subscription type</option>
+        <option>Sensor</option>
+        <option>Stream</option>
+        <option>StreamObservation</option>
+        <option>ObservableProperty</option>
+    </select>
+    <br>
+    <label for="subscription">Subscription:</label>
+    <textarea id="subscription" name="subscription" required>{{ formdata }}</textarea>
+    <br>
+    <button type="submit">
+        Create subscription
+    </button>
+</form>
+
+<form method="POST" action="getsubscriptions">
+    <button type="submit">
+        Get active subscriptions
+    </button>
+</form>
+
+<form method="POST" action="deleteallsubscriptions">
+    <button type="submit">
+        Delete all subscriptions
+    </button>
+</form>
+
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+    <ul class=flashes>
+        {% for message in messages %}
+        <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+{% endwith %}
+
+{% if subscriptions %}
+<p>
+    <table id="subscriptions">
+        <thead>
+            <tr>
+                <th>Delete</th>
+                <th>ID</th>
+                <th>Host</th>
+                <th>Subscription</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for sub in subscriptions %}
+            <tr><td><form action="deletesubscription" method="POST"><button type="submit" name="subid" value={{ sub.id }}>Delete</button></form>
+            </td><td>{{ sub.id }}</td><td>{{ sub.address }}</td><td>{{ sub.subscription }}</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</p>
+{% endif %}
+
+{% endblock %}
+
+

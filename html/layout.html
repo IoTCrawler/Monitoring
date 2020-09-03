@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('.static', filename='css/template.css') }}">
+    <script src="{{ url_for('.static', filename='js/template.js') }}"></script>
+
+    {% block head %}{% endblock %}
+
+
+    <title>IoTCrawler - Fault Detection</title>
+</head>
+
+<body>
+    <h1 align='Center'> IoT Crawler - Fault Detection</h1>
+    <img src="{{ url_for('.static', filename='images/HS-OS-Logo-Quer-rgb.jpg') }}" style='position:absolute; top:0; right:0;' width="300px" height='70px'>
+    <img src="{{ url_for('.static', filename='images/IoTCrawler_Logo.png') }}" style='position:absolute; top:10px; left:0;' width="300px" height='60px'>
+
+    <nav id="navbar" class="navbar navbar-default" role="navigation">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="{{ url_for('.index') }}">Fault Detection</a>
+            </div>
+            <ul class="nav navbar-nav">
+                <li><a href="{{ url_for('.showsubscriptions') }}">Subscriptions</a></li>
+                <li><a href="{{ url_for('.showdatasources') }}">Datasources</a></li>
+                <li><a href="{{ url_for('.showlog') }}">Log</a></li>
+            </ul>
+        </div>
+    </nav>
+
+
+
+    <div id="top-section">
+        {% block top %}{% endblock %}
+    </div>
+
+    <div id="middle-section">
+        {% block body %}{% endblock %}
+    </div>
+
+
+    <div class="footer">
+        {% block footer %}{% endblock %}
+    </div>
+
+</body>
+</html>

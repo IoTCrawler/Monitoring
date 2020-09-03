@@ -1,0 +1,35 @@
+
+{% extends "layout.html" %}
+
+{% block head %}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css">
+<script src="{{ url_for('.static', filename='js/datasources.js') }}" async></script>
+{% endblock %}
+
+{% block body %}
+<p>The following list shows all registered data sources and their current QoI</p>
+
+{% if datasources %}
+<table id="datasources" class="display" style="width: 100%">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Last Update</th>
+            <th>Stream</th>
+            <th>Sensor</th>
+            <th>ObsProperty</th>
+            <th>Observation</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for ds in datasources %}
+    <tr><td style="word-break:break-all;">{{ ds.stream_id}}</td><td>{{ ds.observedat|datetime }}</td><td>{{ ds.stream }}</td><td>{{ ds.sensor}}</td><td>{{ ds.obsproperty}}</td><td>{{ ds.observation}}</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+{% endblock %}
+
+
+

@@ -1,0 +1,23 @@
+{
+  "id": "urn:ngsi-ld:Subscription:FD_",
+  "type": "Subscription",
+  "entities": [
+    {
+      "type": "iot-stream:IotStream"
+    }
+  ],
+  "notification": {
+    "attributes": [],
+    "format": "keyValues",
+    "endpoint": {
+      "uri": "{{notif-endpoint}}",
+      "accept": "application/ld+json"
+    }
+  },
+  "@context": [
+    "http://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld",
+    {
+      "iot-stream": "http://purl.org/iot/ontology/iot-stream#"
+    }
+  ]
+}
