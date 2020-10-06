@@ -242,13 +242,16 @@ def _subscribe_forTypeId(ngsi_type, entityId, sublist):
             except KeyError:
                 pass
 
+    endpoint_extension = ""
     # create subscription
     if ngsi_type is ngsi_parser.NGSI_Type.Sensor:
         filename = 'static/json/subscription_sensor.json'
+        endpoint_extension = "/sensor"
     elif ngsi_type is ngsi_parser.NGSI_Type.IoTStream:
         filename = 'static/json/subscription_iotstream.json'
     elif ngsi_type is ngsi_parser.NGSI_Type.StreamObservation:
         filename = 'static/json/subscription_streamobservation.json'
+        endpoint_extension = "/observation"
     elif ngsi_type is ngsi_parser.NGSI_Type.ObservableProperty:
         filename = 'static/json/subscription_observableproperty.json'
     else:
@@ -259,7 +262,7 @@ def _subscribe_forTypeId(ngsi_type, entityId, sublist):
         subscription = json.load(jFile)
         subscription['id'] = subscription['id'] + str(uuid.uuid4())
         # replace callback
-        subscription['notification']['endpoint']['uri'] = Config.getEnvironmentVariable('FD_CALLBACK')
+        subscription['notification']['endpoint']['uri'] = Config.getEnvironmentVariable('FD_CALLBACK') + endpoint_extension
         # set entity to subscribe to
         if entityId:
             subscription['entities'][0]['id'] = entityId

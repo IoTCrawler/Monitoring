@@ -57,6 +57,10 @@ class Sensor:
     def subscriptionID(self):
         return self.ID() + ":Subscription"
 
+    def isFaultDetectionEnabled(self):
+        fd = self.__saveGet("fd:enabled", "value")
+        return fd != None and fd == 1
+
     def updateInterval(self):
         ui = self.__saveGet("https://w3id.org/iot/qoi#updateinterval", "value")
         if not ui:
