@@ -8,7 +8,7 @@ from configuration import Config
 from ngsi_ld.subscription import Subscription
 from ngsi_ld import ngsi_parser
 
-logger = logging.getLogger('faultdetection')
+logger = logging.getLogger('monitoring')
 
 headers = {}
 headers.update({'content-type': 'application/ld+json'})
