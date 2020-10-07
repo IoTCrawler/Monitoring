@@ -85,7 +85,7 @@ class FaultDetection:
         
         
     def update(self, sensorID, value):
-        if sensorID not in self.old_values.values():
+        if sensorID not in self.old_values.keys():
             self.old_values[sensorID] = value
             return 0 #skip if its the first value - No difference
         difference = value - self.old_value[sensorID]
