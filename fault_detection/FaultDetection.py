@@ -24,7 +24,8 @@ class FaultDetection:
     def __init__(self):
 #        self.newSensor(entity)
         self.detectors = {}
-        self.old_values = {}      
+        self.old_values = {}
+        self.no_of_faults = {}
         
 #     def patch_ngsi_entity(ngsi_msg, broker):
 #     # for updating entity we have to delete id and type, first do copy if needed somewhere else
@@ -92,6 +93,10 @@ class FaultDetection:
         self.old_values[sensorID] = value
         #return 0 if normal return 1 if faulty
         if self.detectors[sensorID].detector(difference) == 'F':
+            if sensorID not in self.no_of_faults.keys():
+                self.no_of_faults[sensorID] = 1
+            else:
+                self.no_of_faults[sensorID] = self.no_of_faults[sensorID] + 1
             return 1
         else:
             return 0
