@@ -164,10 +164,18 @@ def callback():
 @bp.route('/callback/observation', methods=['POST'])
 def callback_observation():
     data = request.get_json()
-    streamObservationID = data['id']
-    if streamObservationID in sensorToObservationMap:
-        if faultDetection.update(sensorID, value):
-            faultRecovery.update(sensorID, value)
+    # check if notification which might contain other entities
+    if ngsi_type is NGSI_Type.Notification:
+        data = ngsi_ld.ngsi_parser.get_notification_entities(data)
+    else:
+        data = [data]
+
+    for entity in data:
+        streamObservationID = entity['id']
+        value = entity['http://www.w3.org/ns/sosa/hasSimpleResult']['value']
+        if streamObservationID in sensorToObservationMap:
+            if faultDetection.update(sensorID, value):
+                faultRecovery.update(sensorID, value)
 
     return Response('OK', status=200)
 
