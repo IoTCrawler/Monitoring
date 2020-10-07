@@ -20,12 +20,12 @@ from others import utils
 # broker = os.environ['NGSI_ADDRESS']# = '155.54.95.2488:9090' #pass in class?
 
 class FaultDetection:
-    
+
     def __init__(self):
 #        self.newSensor(entity)
         self.detectors = {}
-        self.old_values = {}      
-        
+        self.old_values = {}
+
 #     def patch_ngsi_entity(ngsi_msg, broker):
 #     # for updating entity we have to delete id and type, first do copy if needed somewhere else
 #         ngsi_msg_patch = dict(ngsi_msg)
@@ -36,12 +36,12 @@ class FaultDetection:
 #         print("Patch response:", r.text, "code", r.status_code)
 #         if r.status_code == 204:
 #             print("Successful patch " + ngsi_msg['id'])
-        
-        
+
+
 #     def create_ngsi_entity(self,ngsi_msg):
 #         t = threading.Thread(target=self._create_ngsi_entity, args=(ngsi_msg,))
 #         t.start()
-        
+
 #     def _create_ngsi_entity(self, ngsi_msg):
 # #        for broker in BROKERS:
 #         print("save message to ngsi broker:", ngsi_msg)
@@ -63,7 +63,7 @@ class FaultDetection:
 #         except requests.exceptions.ConnectionError:
 #             print("server not reachable?")
 
-        
+
     def newSensor(self, entity):
         # ngsi_id, ngsi_type = ngsi_parser.get_IDandType(ngsi_data)
         # # check type
@@ -74,16 +74,18 @@ class FaultDetection:
         ##############################################################################
         t = threading.Thread(target=self._newSensor, args=(entity,))
         t.start()
-        
-        
+
+
     def _newSensor(self, entity):
         ngsi_id, ngsi_type = ngsi_parser.get_IDandType(entity)
-        self.detectors[ngsi_id] = Detector()
         result = utils.loadTrainingData(ngsi_id)
-        self.detectors[ngsi_id].get_data(result[ngsi_id])
-        self.detectors[ngsi_id].train()
-        
-        
+        if ngsi_id in result:
+            self.detectors[ngsi_id] = Detector()
+            self.detectors[ngsi_id].get_data(result[ngsi_id])
+            self.detectors[ngsi_id].train()
+        else:
+            print("no training data for", ngsi_id, "found")
+
     def update(self, sensorID, value):
         if sensorID not in self.old_values.values():
             self.old_values[sensorID] = value
@@ -95,6 +97,3 @@ class FaultDetection:
             return 1
         else:
             return 0
-        
-        
-        
