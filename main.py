@@ -154,7 +154,7 @@ def callback():
         sensorID = s.ID()
         if s.isFaultDetectionEnabled():
             datasourceManager.update(entity)
-            faultDetection.newSensor(sensorID, entity)
+            faultDetection.newSensor(entity)
             faultRecovery.newSensor(sensorID, entity)
             sensorToObservationMap[s.streamObservationID()] = sensorID
 
