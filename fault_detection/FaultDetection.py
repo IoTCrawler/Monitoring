@@ -90,15 +90,14 @@ class FaultDetection:
     def update(self, sensorID, value):
         if sensorID not in self.old_values.keys():
             self.old_values[sensorID] = value
+            self.no_of_faults[sensorID] = 0
             return 0 #skip if its the first value - No difference
         difference = value - self.old_value[sensorID]
         self.old_values[sensorID] = value
         #return 0 if normal return 1 if faulty
         if self.detectors[sensorID].detector(difference) == 'F':
-            if sensorID not in self.no_of_faults.keys():
-                self.no_of_faults[sensorID] = 1
-            else:
-                self.no_of_faults[sensorID] = self.no_of_faults[sensorID] + 1
+            self.no_of_faults[sensorID] = self.no_of_faults[sensorID] + 1
             return 1
         else:
+            self.no_of_faults[sensorID] = 0
             return 0
