@@ -24,7 +24,8 @@ def get_active_subscriptions(sublist):
 
 def _get_active_subscriptions(subscriptions):
     # get old subscriptions for fault detection (with our callback url)
-    server_url = "http://" + Config.getEnvironmentVariable('NGSI_ADDRESS') + "/ngsi-ld/v1/subscriptions/"
+    # server_url = "http://" + Config.getEnvironmentVariable('NGSI_ADDRESS') + "/ngsi-ld/v1/subscriptions/"
+    server_url = Config.getEnvironmentVariable('NGSI_ADDRESS') + "/ngsi-ld/v1/subscriptions/"
     try:
         r = requests.get(server_url, headers=headers)
         if r.status_code == 200:
@@ -94,7 +95,8 @@ def _add_subscription(subscription, subscriptions):
 
 
 def ngsi_add_subscription(subscription):
-    server_url = "http://" + Config.getEnvironmentVariable('NGSI_ADDRESS') + "/ngsi-ld/v1/subscriptions/"
+    # server_url = "http://" + Config.getEnvironmentVariable('NGSI_ADDRESS') + "/ngsi-ld/v1/subscriptions/"
+    server_url = Config.getEnvironmentVariable('NGSI_ADDRESS') + "/ngsi-ld/v1/subscriptions/"
     r = requests.post(server_url, json=subscription, headers=headers)
     logger.info("Adding subscription: " + str(r.status_code) + " " + r.text)
     if r.status_code != 201:
@@ -123,7 +125,8 @@ def add_ngsi_attribute(ngsi_msg, eid):
 def _add_ngsi_attribute(ngsi_msg, eid):
     try:
         logger.debug("Add ngsi attribute to entity " + eid + ":" + str(ngsi_msg))
-        url = "http://" + Config.getEnvironmentVariable('NGSI_ADDRESS') + "/ngsi-ld/v1/entities/" + eid + "/attrs/"
+        # url = "http://" + Config.getEnvironmentVariable('NGSI_ADDRESS') + "/ngsi-ld/v1/entities/" + eid + "/attrs/"
+        url = Config.getEnvironmentVariable('NGSI_ADDRESS') + "/ngsi-ld/v1/entities/" + eid + "/attrs/"
         r = requests.post(url, json=ngsi_msg, headers=headers)
         if r.status_code != 204:
             logger.debug("Attribute exists, patch it")
@@ -140,7 +143,8 @@ def create_ngsi_entity(ngsi_msg):
 def _create_ngsi_entity(ngsi_msg):
     try:
         logger.debug("Save entity to ngsi broker: " + str(ngsi_msg))
-        url = "http://" + Config.getEnvironmentVariable('NGSI_ADDRESS') + "/ngsi-ld/v1/entities/"
+        # url = "http://" + Config.getEnvironmentVariable('NGSI_ADDRESS') + "/ngsi-ld/v1/entities/"
+        url = Config.getEnvironmentVariable('NGSI_ADDRESS') + "/ngsi-ld/v1/entities/"
         # print(url)
         r = requests.post(url, json=ngsi_msg, headers=headers)
         if r.status_code == 409:
@@ -161,7 +165,8 @@ def _patch_ngsi_entity(ngsi_msg):
         ngsi_msg_patch = dict(ngsi_msg)
         ngsi_msg_patch.pop('id')
         ngsi_msg_patch.pop('type', None)
-        url = "http://" + Config.getEnvironmentVariable('NGSI_ADDRESS') + "/ngsi-ld/v1/entities/" + ngsi_msg[
+        # url = "http://" + Config.getEnvironmentVariable('NGSI_ADDRESS') + "/ngsi-ld/v1/entities/" + ngsi_msg[
+        url = Config.getEnvironmentVariable('NGSI_ADDRESS') + "/ngsi-ld/v1/entities/" + ngsi_msg[
             'id'] + "/attrs"
         r = requests.patch(url, json=ngsi_msg_patch, headers=headers)
         logger.debug("Entity patched: " + str(r.status_code))
@@ -182,7 +187,8 @@ def _get_entity_updateList(entityid, entitylist):
 
 def get_entity(entitiyid):
     try:
-        url = "http://" + Config.getEnvironmentVariable('NGSI_ADDRESS') + "/ngsi-ld/v1/entities/" + entitiyid
+        # url = "http://" + Config.getEnvironmentVariable('NGSI_ADDRESS') + "/ngsi-ld/v1/entities/" + entitiyid
+        url = Config.getEnvironmentVariable('NGSI_ADDRESS') + "/ngsi-ld/v1/entities/" + entitiyid
         r = requests.get(url, headers=headers)
         if r.status_code != 200:
             logger.error("Error requesting entity " + entitiyid + ": " + r.text)
@@ -194,7 +200,8 @@ def get_entity(entitiyid):
 
 def get_entities(entitytype, limit, offset):
     try:
-        url = "http://" + Config.getEnvironmentVariable('NGSI_ADDRESS') + "/ngsi-ld/v1/entities/"
+        # url = "http://" + Config.getEnvironmentVariable('NGSI_ADDRESS') + "/ngsi-ld/v1/entities/"
+        url = Config.getEnvironmentVariable('NGSI_ADDRESS') + "/ngsi-ld/v1/entities/"
         params = {'type': entitytype, 'limit': limit, 'offset': offset}
         r = requests.get(url, headers=headers, params=params)
         if r.status_code != 200:

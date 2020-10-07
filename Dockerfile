@@ -32,7 +32,7 @@ COPY sensor.py /monitoring/sensor.py
 COPY datasource_manager.py /monitoring/datasource_manager.py
 
 
-ENV NGSI_ADDRESS 155.54.95.248:9090
+ENV NGSI_ADDRESS http://155.54.95.248:9090
 ENV FD_HOST 0.0.0.0
 ENV FD_PORT 8082
 ENV FD_CALLBACK https://mobcom.ecs.hs-osnabrueck.de/faultdetection/callback
