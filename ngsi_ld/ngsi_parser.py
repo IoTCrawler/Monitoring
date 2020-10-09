@@ -11,6 +11,7 @@ class NGSI_Type(Enum):
     Sensor = 3
     Notification = 4
     ObservableProperty = 5
+    QoI = 6
 
 
 def get_type(ngsi_data):
@@ -23,6 +24,8 @@ def get_type(ngsi_data):
         return NGSI_Type.Sensor
     elif ngsi_type in ("sosa:ObservableProperty", "http://www.w3.org/ns/sosa/ObservableProperty"):
         return NGSI_Type.ObservableProperty
+    elif ngsi_type in ("qoi:Quality", "https://w3id.org/iot/qoi#Quality"):
+        return NGSI_Type.QoI
     elif ngsi_type in "Notification":
         return NGSI_Type.Notification
 
@@ -36,6 +39,8 @@ def get_url(ngsi_type):
         return "http://www.w3.org/ns/sosa/Sensor"
     elif ngsi_type == NGSI_Type.ObservableProperty:
         return "http://www.w3.org/ns/sosa/ObservableProperty"
+    elif ngsi_type == NGSI_Type.QoI:
+        return "https://w3id.org/iot/qoi#Quality"
 
 
 def get_notification_entities(notification):

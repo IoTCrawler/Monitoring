@@ -256,11 +256,14 @@ def _subscribe_forTypeId(ngsi_type, entityId, sublist):
         endpoint_extension = "/sensor"
     elif ngsi_type is ngsi_parser.NGSI_Type.IoTStream:
         filename = 'static/json/subscription_iotstream.json'
+        endpoint_extension = "/stream"
     elif ngsi_type is ngsi_parser.NGSI_Type.StreamObservation:
         filename = 'static/json/subscription_streamobservation.json'
-        endpoint_extension = "/observation"
     elif ngsi_type is ngsi_parser.NGSI_Type.ObservableProperty:
         filename = 'static/json/subscription_observableproperty.json'
+    elif ngsi_type is ngsi_parser.NGSI_Type.QoI:
+        filename = 'static/json/subscription_qoi.json'
+        endpoint_extension = "/qoi"
     else:
         logger.debug("No subscription file found for:" + str(ngsi_type))
         return

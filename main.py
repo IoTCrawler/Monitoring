@@ -10,8 +10,12 @@ from configuration import Config
 from ngsi_ld.ngsi_parser import NGSI_Type
 from other.exceptions import BrokerError
 from other.logging import DequeLoggerHandler
-from other.sensor import Sensor
+from sensor import Sensor
 from datasource_manager import DatasourceManager
+from broker_interface import get_entity
+
+import fault_recovery
+from fault_detection.FaultDetection import FaultDetection
 
 # Configure logging
 logger = logging.getLogger('monitoring')
@@ -39,6 +43,7 @@ datasourceManager = DatasourceManager()
 faultDetection = FaultDetection()
 faultRecovery = faultRecovery()
 sensorToObservationMap = {}
+qualityToSensorMap = {}
 
 
 def format_datetime(value):
@@ -158,6 +163,16 @@ def callback():
             faultRecovery.newSensor(sensorID, entity)
             sensorToObservationMap[s.streamObservationID()] = sensorID
 
+            so = get_entity(s.streamObservationID())
+            try:
+                if so:
+                    iotstreamID = so['http://purl.org/iot/ontology/iot-stream#belongsTo']['object']
+                    stream = get_entity(iotstreamID)
+                    if stream:
+                        qualityID = stream['https://w3id.org/iot/qoi#hasQuality']['object']
+                        qualityToSensorMap[qualityID] = sensorID
+            except KeyError:
+                logger.debug("could not determine the ID of the Quality for sensor " + sensorID + ". Detection of missing values will not be possible")
 
     return Response('OK', status=200)
 
@@ -176,6 +191,25 @@ def callback_observation():
         if streamObservationID in sensorToObservationMap:
             if faultDetection.update(sensorID, value):
                 faultRecovery.update(sensorID, value)
+
+    return Response('OK', status=200)
+
+# required to get to qoi:Frequency
+@bp.route('/callback/qoi', methods=['POST'])
+def callback_qoi():
+    data = request.get_json()
+    # check if notification which might contain other entities
+    if ngsi_type is NGSI_Type.Notification:
+        data = ngsi_ld.ngsi_parser.get_notification_entities(data)
+    else:
+        data = [data]
+
+    for entity in data:
+        qoiID = entity['id']
+        if qoiID in qualityToSensorMap:
+            # TODO: test if small than before
+            value = entity['https://w3id.org/iot/qoi#frequency']['https://w3id.org/iot/qoi#hasRatedValue']['value']
+            faultDetection.missingValue(qualityToSensorMap[qoiID], value)
 
     return Response('OK', status=200)
 

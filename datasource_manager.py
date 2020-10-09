@@ -21,11 +21,11 @@ class DatasourceManager:
     def initialise(self):
         broker_interface.initialise_subscriptions(self.subscriptions,
                                                   # (NGSI_Type.IoTStream, NGSI_Type.Sensor, NGSI_Type.ObservableProperty))
-                                                  (NGSI_Type.Sensor, NGSI_Type.StreamObservation))
+                                                  (NGSI_Type.Sensor, NGSI_Type.StreamObservation, NGSI_Type.QoI))
 
         # get and notify for existing entities in a separate thread as this is blocking
         # for ngsi_type in [NGSI_Type.IoTStream, NGSI_Type.Sensor, NGSI_Type.ObservableProperty]:
-        for ngsi_type in [NGSI_Type.Sensor, NGSI_Type.StreamObservation]:
+        for ngsi_type in [NGSI_Type.QoI, NGSI_Type.Sensor, NGSI_Type.StreamObservation]:
             t = threading.Thread(target=self.initialise_entities, args=(ngsi_type,))
             t.start()
 
