@@ -26,6 +26,10 @@ class FaultDetection:
         self.detectors = {}
         self.old_values = {}
         self.no_of_faults = {}
+        self.missedValues = {}
+        self.createdVS = {}
+        #self.no_of_misses = {}
+        #self.updateIntervals = {}
 
 #     def patch_ngsi_entity(ngsi_msg, broker):
 #     # for updating entity we have to delete id and type, first do copy if needed somewhere else
@@ -79,25 +83,70 @@ class FaultDetection:
 
     def _newSensor(self, entity):
         ngsi_id, ngsi_type = ngsi_parser.get_IDandType(entity)
-        result = utils.loadTrainingData(ngsi_id)
+        result = utils.loadTrainingData(ngsi_id) 
+        #timeInterval, unit = ngsi_parser.get_sensor_updateinterval_and_unit(entity)
+        #todo: if sensor has no training data, store values and create data
         if ngsi_id in result:
             self.detectors[ngsi_id] = Detector()
             self.detectors[ngsi_id].get_data(result[ngsi_id])
             self.detectors[ngsi_id].train()
         else:
             print("no training data for", ngsi_id, "found")
-
+            
+    def callVS(self, sensorID, call):
+        if call == 'u':
+            if self.no_of_faults[sensorID] == 20 and self.createdVS[sensorID] == 0:
+                self.createdVS[sensorID] = 1
+                return 'y'
+            else:
+                return 'n'
+        if call == 'm':
+            if self.no_of_misses[sensorID] == 20 and self.createdVS[sensorID] == 0:
+                self.createdVS[sensorID] = 1
+                return 'y'
+            else:
+                return 'n'
+    
+    #check if we need to make a call here to del VS.
+    #PTP: do we need to del a VS if we can still use it later without retraining
+    #considering we can del a VS and still keep the model file is there a method in VS which can check and load the model
+    def delVS(sensorID):
+        pass
+            
+    def missingValue(self, sensorID, freq):
+        t = threading.Thread(target=self._missingValue, args=(sensorID, freq,))
+        t.start()   
+        
+    def _missingValue(self, sensorID, freq):
+        if sensorID not in self.missedValues.keys():
+            self.missedValues[sensorID] = freq
+            self.no_of_misses[sensorID] = 0 # necessary to have separate counters for miss and fault because of reset condition
+            return self.callVS(sensorID, 'm'), 0 #no result from first value as no decrease in freq| todo: change this if freq always starts with 1
+        freq_difference = freq - self.missedValues[sensorID]
+        self.missedValue[sensorID] = freq
+        if freq_difference <= 0 and freq != 1 :
+            self.no_of_misses[sensorID] = self.no_of_misses[sensorID] + 1
+            return self.callVS(sensorID, 'm'), 1
+        else:
+            self.no_of_misses[sensorID] = 0
+            return self.callVS(sensorID, 'm'), 0
+    
     def update(self, sensorID, value):
+        t = threading.Thread(target=self._update, args=(sensorID, value,))
+        t.start()
+        
+    def _update(self, sensorID, value):
         if sensorID not in self.old_values.keys():
             self.old_values[sensorID] = value
             self.no_of_faults[sensorID] = 0
-            return 0 #skip if its the first value - No difference
+            self.createdVS[sensorID] = 0
+            return self.callVS(sensorID, 'u'), 0 #skip if its the first value - No difference
         difference = value - self.old_value[sensorID]
         self.old_values[sensorID] = value
         #return 0 if normal return 1 if faulty
         if self.detectors[sensorID].detector(difference) == 'F':
             self.no_of_faults[sensorID] = self.no_of_faults[sensorID] + 1
-            return 1
+            return self.callVS(sensorID, 'u'), 1
         else:
             self.no_of_faults[sensorID] = 0
-            return 0
+            return self.callVS(sensorID, 'u'), 0
