@@ -3,7 +3,7 @@
   "type": "Subscription",
   "entities": [
     {
-      "type": "iot-stream:StreamObservation"
+      "type": "qoi:Quality"
     }
   ],
   "notification": {
@@ -17,7 +17,7 @@
   "@context": [
     "http://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld",
     {
-      "iot-stream": "http://purl.org/iot/ontology/iot-stream#"
+      "qoi": "https://w3id.org/iot/qoi#"
     }
   ]
 }
