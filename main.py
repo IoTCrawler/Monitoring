@@ -161,7 +161,7 @@ def callback():
             datasourceManager.update(entity)
             faultDetection.newSensor(entity)
             faultRecovery.newSensor(sensorID, entity)
-            sensorToObservationMap[s.streamObservationID()] = sensorID
+            sensorToObservationMap[s.streamObservationID()] = s
 
             so = get_entity(s.streamObservationID())
             try:
@@ -170,7 +170,7 @@ def callback():
                     stream = get_entity(iotstreamID)
                     if stream:
                         qualityID = stream['https://w3id.org/iot/qoi#hasQuality']['object']
-                        qualityToSensorMap[qualityID] = sensorID
+                        qualityToSensorMap[qualityID] = s
             except KeyError:
                 logger.debug("could not determine the ID of the Quality for sensor " + sensorID + ". Detection of missing values will not be possible")
 
@@ -189,8 +189,8 @@ def callback_observation():
         streamObservationID = entity['id']
         value = entity['http://www.w3.org/ns/sosa/hasSimpleResult']['value']
         if streamObservationID in sensorToObservationMap:
-            if faultDetection.update(sensorID, value):
-                faultRecovery.update(sensorID, value)
+            if faultDetection.update(sensorToObservationMap[streamObservationID].ID(), value):
+                faultRecovery.update(sensorToObservationMap[streamObservationID].ID(), value)
 
     return Response('OK', status=200)
 
@@ -209,7 +209,7 @@ def callback_qoi():
         if qoiID in qualityToSensorMap:
             # TODO: test if small than before
             value = entity['https://w3id.org/iot/qoi#frequency']['https://w3id.org/iot/qoi#hasRatedValue']['value']
-            faultDetection.missingValue(qualityToSensorMap[qoiID], value)
+            faultDetection.missingValue(qualityToSensorMap[qoiID].ID(), value, qualityToSensorMap[qoiID].updateInterval())
 
     return Response('OK', status=200)
 
