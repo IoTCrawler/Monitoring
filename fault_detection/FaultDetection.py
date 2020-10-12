@@ -28,6 +28,7 @@ class FaultDetection:
         self.no_of_faults = {}
         self.missedValues = {}
         self.createdVS = {}
+        self.reset_counter = {}
         #self.no_of_misses = {}
         #self.updateIntervals = {}
 
@@ -83,7 +84,13 @@ class FaultDetection:
 
     def _newSensor(self, entity):
         ngsi_id, ngsi_type = ngsi_parser.get_IDandType(entity)
-        result = utils.loadTrainingData(ngsi_id) 
+        result = utils.loadTrainingData(ngsi_id)
+        self.no_of_misses[ngsi_id] = 0
+        self.no_of_faults[ngsi_id] = 0
+        self.createdVS[ngsi_id] = 0
+        self.missedValues[ngsi_id] = None
+        self.old_values[ngsi_id] = None
+        self.reset_counter[ngsi_id] = 0
         #timeInterval, unit = ngsi_parser.get_sensor_updateinterval_and_unit(entity)
         #todo: if sensor has no training data, store values and create data
         if ngsi_id in result:
@@ -93,60 +100,53 @@ class FaultDetection:
         else:
             print("no training data for", ngsi_id, "found")
             
-    def callVS(self, sensorID, call):
-        if call == 'u':
-            if self.no_of_faults[sensorID] == 20 and self.createdVS[sensorID] == 0:
-                self.createdVS[sensorID] = 1
-                return 'y'
-            else:
-                return 'n'
-        if call == 'm':
-            if self.no_of_misses[sensorID] == 20 and self.createdVS[sensorID] == 0:
-                self.createdVS[sensorID] = 1
-                return 'y'
-            else:
-                return 'n'
+    #return 1 for create VS, 0 for dont        
+    def callVS(self, sensorID):
+        if self.no_of_faults[sensorID] == 20 and self.createdVS[sensorID] == 0:
+            self.createdVS[sensorID] = 1
+            return 1 
+        else:
+            return 0
     
-    #check if we need to make a call here to del VS.
-    #PTP: do we need to del a VS if we can still use it later without retraining
-    #considering we can del a VS and still keep the model file is there a method in VS which can check and load the model
-    def delVS(sensorID):
-        pass
-            
+    #return 2 to delete VS, 0 for dont 
+    def delVS(self, sensorID):
+        if self.reset_counter[sensorID] > 10:
+            self.no_of_faults[sensorID] = 0
+            self.no_of_misses[sensorID] = 0
+            self.createdVS[sensorID] = 0
+            return 2
+        else:
+            return 0
+    
+    #return: arg1 - 0,1 or 2 -> no operation, callVS, delete VS | arg2 - 0,1 -> Value found, Missing value
     def missingValue(self, sensorID, freq):
-        t = threading.Thread(target=self._missingValue, args=(sensorID, freq,))
-        t.start()   
-        
-    def _missingValue(self, sensorID, freq):
-        if sensorID not in self.missedValues.keys():
+        if self.missedValues[sensorID] == None:
             self.missedValues[sensorID] = freq
-            self.no_of_misses[sensorID] = 0 # necessary to have separate counters for miss and fault because of reset condition
-            return self.callVS(sensorID, 'm'), 0 #no result from first value as no decrease in freq| todo: change this if freq always starts with 1
+            return self.callVS(sensorID), 0 #no result from first value as no decrease in freq| todo: change this if freq always starts with 1
         freq_difference = freq - self.missedValues[sensorID]
         self.missedValue[sensorID] = freq
         if freq_difference <= 0 and freq != 1 :
+            self.no_of_faults[sensorID] = self.no_of_faults[sensorID] + 1
             self.no_of_misses[sensorID] = self.no_of_misses[sensorID] + 1
-            return self.callVS(sensorID, 'm'), 1
+            self.reset_counter[sensorID] = 0
+            return self.callVS(sensorID), 1
         else:
-            self.no_of_misses[sensorID] = 0
-            return self.callVS(sensorID, 'm'), 0
+            self.reset_counter[sensorID] = self.reset_counter[sensorID] + 1  #add a counter for better values before reset
+            return self.delVS(sensorID), 0
     
+    #return: arg1 - 0,1 or 2 -> no operation, callVS, delete VS | arg2 - 0,1 -> No fault, Fault    
     def update(self, sensorID, value):
-        t = threading.Thread(target=self._update, args=(sensorID, value,))
-        t.start()
-        
-    def _update(self, sensorID, value):
-        if sensorID not in self.old_values.keys():
-            self.old_values[sensorID] = value
-            self.no_of_faults[sensorID] = 0
-            self.createdVS[sensorID] = 0
-            return self.callVS(sensorID, 'u'), 0 #skip if its the first value - No difference
+        if self.old_values[sensorID] == None:
+            self.old_values[sensorID] = value 
+            return self.callVS(sensorID), 0 #skip if its the first value - No difference
         difference = value - self.old_value[sensorID]
         self.old_values[sensorID] = value
         #return 0 if normal return 1 if faulty
         if self.detectors[sensorID].detector(difference) == 'F':
             self.no_of_faults[sensorID] = self.no_of_faults[sensorID] + 1
-            return self.callVS(sensorID, 'u'), 1
+            self.reset_counter[sensorID] = 0
+            return self.callVS(sensorID), 1
         else:
-            self.no_of_faults[sensorID] = 0
-            return self.callVS(sensorID, 'u'), 0
+            #self.no_of_faults[sensorID] = 0
+            self.reset_counter[sensorID] = self.reset_counter[sensorID] + 1
+            return self.delVS(sensorID), 0 
