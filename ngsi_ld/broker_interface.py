@@ -189,6 +189,7 @@ def get_entity(entitiyid):
     try:
         # url = "http://" + Config.getEnvironmentVariable('NGSI_ADDRESS') + "/ngsi-ld/v1/entities/" + entitiyid
         url = Config.getEnvironmentVariable('NGSI_ADDRESS') + "/ngsi-ld/v1/entities/" + entitiyid
+        log.debug("loading:", url)
         r = requests.get(url, headers=headers)
         if r.status_code != 200:
             logger.error("Error requesting entity " + entitiyid + ": " + r.text)
@@ -253,17 +254,17 @@ def _subscribe_forTypeId(ngsi_type, entityId, sublist):
     # create subscription
     if ngsi_type is ngsi_parser.NGSI_Type.Sensor:
         filename = 'static/json/subscription_sensor.json'
-        endpoint_extension = "/sensor"
+        endpoint_extension = "/callback/sensor"
     elif ngsi_type is ngsi_parser.NGSI_Type.IoTStream:
         filename = 'static/json/subscription_iotstream.json'
-        endpoint_extension = "/stream"
+        endpoint_extension = "/callback/stream"
     elif ngsi_type is ngsi_parser.NGSI_Type.StreamObservation:
         filename = 'static/json/subscription_streamobservation.json'
     elif ngsi_type is ngsi_parser.NGSI_Type.ObservableProperty:
         filename = 'static/json/subscription_observableproperty.json'
     elif ngsi_type is ngsi_parser.NGSI_Type.QoI:
         filename = 'static/json/subscription_qoi.json'
-        endpoint_extension = "/qoi"
+        endpoint_extension = "/callback/qoi"
     else:
         logger.debug("No subscription file found for:" + str(ngsi_type))
         return

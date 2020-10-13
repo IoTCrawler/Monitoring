@@ -6,7 +6,7 @@ import requests
 from ngsi_ld import ngsi_parser
 from ngsi_ld.ngsi_parser import NGSI_Type
 from fault_detection.detector import Detector
-from others import utils
+from other import utils
 
 # REGISTRATION_CONTENT_TYPE = {'content-type': 'application/json'}
 # REGISTRATION_FIWARE_SERVICE = {'fiware-service': 'openiot'}
@@ -71,6 +71,7 @@ class FaultDetection:
 
 
     def newSensor(self, entity):
+        print("FD newSensor called")
         # ngsi_id, ngsi_type = ngsi_parser.get_IDandType(ngsi_data)
         # # check type
         # if ngsi_type is NGSI_Type.Sensor:# or NGSI_Type.NGSI_Type.Sensor:StreamObservation:
@@ -99,16 +100,16 @@ class FaultDetection:
             self.detectors[ngsi_id].train()
         else:
             print("no training data for", ngsi_id, "found")
-            
-    #return 1 for create VS, 0 for dont        
+
+    #return 1 for create VS, 0 for dont
     def callVS(self, sensorID):
         if self.no_of_faults[sensorID] == 20 and self.createdVS[sensorID] == 0:
             self.createdVS[sensorID] = 1
-            return 1 
+            return 1
         else:
             return 0
-    
-    #return 2 to delete VS, 0 for dont 
+
+    #return 2 to delete VS, 0 for dont
     def delVS(self, sensorID):
         if self.reset_counter[sensorID] > 10:
             self.no_of_faults[sensorID] = 0
@@ -117,7 +118,7 @@ class FaultDetection:
             return 2
         else:
             return 0
-    
+
     #return: arg1 - 0,1 or 2 -> no operation, callVS, delete VS | arg2 - 0,1 -> Value found, Missing value
     def missingValue(self, sensorID, freq):
         if self.missedValues[sensorID] == None:
@@ -133,11 +134,11 @@ class FaultDetection:
         else:
             self.reset_counter[sensorID] = self.reset_counter[sensorID] + 1  #add a counter for better values before reset
             return self.delVS(sensorID), 0
-    
-    #return: arg1 - 0,1 or 2 -> no operation, callVS, delete VS | arg2 - 0,1 -> No fault, Fault    
+
+    #return: arg1 - 0,1 or 2 -> no operation, callVS, delete VS | arg2 - 0,1 -> No fault, Fault
     def update(self, sensorID, value):
         if self.old_values[sensorID] == None:
-            self.old_values[sensorID] = value 
+            self.old_values[sensorID] = value
             return self.callVS(sensorID), 0 #skip if its the first value - No difference
         difference = value - self.old_value[sensorID]
         self.old_values[sensorID] = value
@@ -149,4 +150,4 @@ class FaultDetection:
         else:
             #self.no_of_faults[sensorID] = 0
             self.reset_counter[sensorID] = self.reset_counter[sensorID] + 1
-            return self.delVS(sensorID), 0 
+            return self.delVS(sensorID), 0

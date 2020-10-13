@@ -58,7 +58,7 @@ class Sensor:
         return self.ID() + ":Subscription"
 
     def isFaultDetectionEnabled(self):
-        fd = self.__saveGet("fd:enabled", "value")
+        fd = self.__saveGet("https://faultdetection.org/fd#enable", "value")
         return fd != None and fd == 1
 
     def updateInterval(self):

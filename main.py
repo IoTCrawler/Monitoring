@@ -2,6 +2,7 @@ import datetime
 import json
 import logging
 import uuid
+import threading
 
 from flask import Flask, redirect, render_template, url_for, request, Blueprint, flash, Response
 
@@ -12,9 +13,9 @@ from other.exceptions import BrokerError
 from other.logging import DequeLoggerHandler
 from sensor import Sensor
 from datasource_manager import DatasourceManager
-from broker_interface import get_entity
+from ngsi_ld.broker_interface import get_entity
 
-import fault_recovery
+from fault_recovery.fault_recovery import FaultRecovery
 from fault_detection.FaultDetection import FaultDetection
 
 # Configure logging
@@ -41,7 +42,7 @@ bp2 = Blueprint('', __name__, static_url_path='', static_folder='static',
 
 datasourceManager = DatasourceManager()
 faultDetection = FaultDetection()
-faultRecovery = faultRecovery()
+faultRecovery = FaultRecovery()
 sensorToObservationMap = {}
 qualityToSensorMap = {}
 
@@ -153,11 +154,14 @@ def callback():
         data = ngsi_ld.ngsi_parser.get_notification_entities(data)
     else:
         data = [data]
+    return handle_new_sensor(data)
 
+def handle_new_sensor(data):
     for entity in data:
         s = Sensor(entity)
         sensorID = s.ID()
         if s.isFaultDetectionEnabled():
+            logger.debug("start FD for sensor: " + sensorID)
             datasourceManager.update(entity)
             faultDetection.newSensor(entity)
             faultRecovery.newSensor(sensorID, entity)
@@ -173,6 +177,8 @@ def callback():
                         qualityToSensorMap[qualityID] = s
             except KeyError:
                 logger.debug("could not determine the ID of the Quality for sensor " + sensorID + ". Detection of missing values will not be possible")
+        else:
+            logger.debug("FaultDetection not enabled for " + sensorID)
 
     return Response('OK', status=200)
 
@@ -189,10 +195,20 @@ def callback_observation():
         streamObservationID = entity['id']
         value = entity['http://www.w3.org/ns/sosa/hasSimpleResult']['value']
         if streamObservationID in sensorToObservationMap:
-            if faultDetection.update(sensorToObservationMap[streamObservationID].ID(), value):
-                faultRecovery.update(sensorToObservationMap[streamObservationID].ID(), value)
+            threading.Thread(target=_call_FD_update, args=(sensorToObservationMap[streamObservationID].ID(), value)).start()
 
     return Response('OK', status=200)
+
+def _call_FD_update(sensorID, value):
+    createOrDelecteVS, isValueFaulty = faultDetection.update(sensorID, value)
+    if isValueFaulty:
+        faultRecovery.update(sensorID, value)
+        if createOrDelecteVS == 1:
+            # TODO: call VS creater
+            pass
+    if createOrDelecteVS == 2:
+        # TODO: call VS creator to remove VS
+        pass
 
 # required to get to qoi:Frequency
 @bp.route('/callback/qoi', methods=['POST'])
@@ -207,11 +223,20 @@ def callback_qoi():
     for entity in data:
         qoiID = entity['id']
         if qoiID in qualityToSensorMap:
-            # TODO: test if small than before
             value = entity['https://w3id.org/iot/qoi#frequency']['https://w3id.org/iot/qoi#hasRatedValue']['value']
-            faultDetection.missingValue(qualityToSensorMap[qoiID].ID(), value, qualityToSensorMap[qoiID].updateInterval())
-
+            thread.Thread(target=_call_FD_missingValue, args=(qualityToSensorMap[qoiID].ID(), value)).start()
     return Response('OK', status=200)
+
+def _call_FD_missingValue(sensorID, freq):
+    createOrDelecteVS, isValueMissing = faultDetection.missingValue(sensorID, freq)
+    if isValueMissing:
+        faultRecovery.update(sensorID, None)
+        if createOrDelecteVS == 1:
+            # call VS creater
+            pass
+    elif createOrDelecteVS == 2:
+        # call VS creater to delete
+        pass
 
 # TODO: remove this blueprint???
 @bp2.route('/', methods=['GET'])
@@ -231,10 +256,18 @@ app.register_blueprint(bp, url_prefix='/monitoring')
 app.register_blueprint(bp2, url_prefix='/')
 app.jinja_env.filters['datetime'] = format_datetime
 
-if __name__ == "__main__":
-    app.run(host=Config.getEnvironmentVariable('FD_HOST'), port=int(Config.getEnvironmentVariable('FD_PORT')),
-            debug=False)
-
+def datasourceManagerInitialised():
     # TODO: subscribe to get notified for new sensor registrations and StreamObservations
     #       instanciate FD and FR for each stream
     #       start fault recovery traning for each new stream
+    sensors = datasourceManager.sensors
+    sensor_list = []
+    for sID in sensors:
+        print("found sensor", sID)
+        print(sensors[sID])
+        sensor_list.append(sensors[sID])
+    handle_new_sensor(sensor_list)
+
+if __name__ == "__main__":
+    datasourceManager.initialise(datasourceManagerInitialised)
+    app.run(host=Config.getEnvironmentVariable('FD_HOST'), port=int(Config.getEnvironmentVariable('FD_PORT')), debug=False)

@@ -16,18 +16,22 @@ class DatasourceManager:
         self.sensors = {}
         self.observations = {}
         self.observableproperties = {}
-        self.initialise()
+        # self.initialise()
 
-    def initialise(self):
+    def initialise(self, finishCallback=None):
         broker_interface.initialise_subscriptions(self.subscriptions,
                                                   # (NGSI_Type.IoTStream, NGSI_Type.Sensor, NGSI_Type.ObservableProperty))
                                                   (NGSI_Type.Sensor, NGSI_Type.StreamObservation, NGSI_Type.QoI))
 
         # get and notify for existing entities in a separate thread as this is blocking
-        # for ngsi_type in [NGSI_Type.IoTStream, NGSI_Type.Sensor, NGSI_Type.ObservableProperty]:
-        for ngsi_type in [NGSI_Type.QoI, NGSI_Type.Sensor, NGSI_Type.StreamObservation]:
-            t = threading.Thread(target=self.initialise_entities, args=(ngsi_type,))
-            t.start()
+        if finishCallback:
+            for ngsi_type in [NGSI_Type.QoI, NGSI_Type.Sensor, NGSI_Type.StreamObservation]:
+                self.initialise_entities(ngsi_type)
+            finishCallback()
+        else: # can be done asynchronous
+            for ngsi_type in [NGSI_Type.QoI, NGSI_Type.Sensor, NGSI_Type.StreamObservation]:
+                t = threading.Thread(target=self.initialise_entities, args=(ngsi_type,))
+                t.start()
 
     def initialise_entities(self, ngsi_type):
         entities = broker_interface.get_all_entities(ngsi_type)
