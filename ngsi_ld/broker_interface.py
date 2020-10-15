@@ -302,7 +302,7 @@ def _subscribe_forTypeId(ngsi_type, entityId, sublist):
         subscription = json.load(jFile)
         subscription['id'] = subscription['id'] + str(uuid.uuid4())
         # replace callback
-        subscription['notification']['endpoint']['uri'] = Config.getEnvironmentVariable('FD_CALLBACK') + endpoint_extension
+        subscription['notification']['endpoint']['uri'] = Config.getEnvironmentVariable('FD_CALLBACK') + "/monitoring" + endpoint_extension
         # set entity to subscribe to
         if entityId:
             subscription['entities'][0]['id'] = entityId
