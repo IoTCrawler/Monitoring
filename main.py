@@ -187,6 +187,7 @@ def handle_new_sensor(data):
 def callback_observation():
     data = request.get_json()
     # check if notification which might contain other entities
+    ngsi_type = ngsi_ld.ngsi_parser.get_type(data)
     if ngsi_type is NGSI_Type.Notification:
         data = ngsi_ld.ngsi_parser.get_notification_entities(data)
     else:
@@ -202,6 +203,7 @@ def callback_observation():
 
 def _call_FD_update(sensorID, value):
     createOrDelecteVS, isValueFaulty = faultDetection.update(sensorID, value)
+    logger.debug("FD verdict:  createOrDelecteVS = %d, isValueFaulty = %d" % (createOrDelecteVS, isValueFaulty))
     if isValueFaulty:
         faultRecovery.update(sensorID, value)
         if createOrDelecteVS == 1:
@@ -216,6 +218,7 @@ def _call_FD_update(sensorID, value):
 def callback_qoi():
     data = request.get_json()
     # check if notification which might contain other entities
+    ngsi_type = ngsi_ld.ngsi_parser.get_type(data)
     if ngsi_type is NGSI_Type.Notification:
         data = ngsi_ld.ngsi_parser.get_notification_entities(data)
     else:
@@ -241,7 +244,7 @@ def _call_FD_missingValue(sensorID, freq):
 
 # TODO: remove this blueprint???
 @bp2.route('/', methods=['GET'])
-def status():
+def status2():
     return "running"
     # return redirect(url_for('semanticenrichment.index'))
 
