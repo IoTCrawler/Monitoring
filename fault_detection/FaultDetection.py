@@ -30,6 +30,7 @@ class FaultDetection:
         self.missedValues = {}
         self.createdVS = {}
         self.reset_counter = {}
+        self.prev_difference = {}
         #self.no_of_misses = {}
         #self.updateIntervals = {}
 
@@ -93,6 +94,7 @@ class FaultDetection:
         self.missedValues[ngsi_id] = None
         self.old_values[ngsi_id] = None
         self.reset_counter[ngsi_id] = 0
+        self.prev_difference[ngsi_id] = None
         #timeInterval, unit = ngsi_parser.get_sensor_updateinterval_and_unit(entity)
         #todo: if sensor has no training data, store values and create data
         if ngsi_id in result:
@@ -143,7 +145,12 @@ class FaultDetection:
         if self.old_values[sensorID] == None:
             self.old_values[sensorID] = value
             return self.callVS(sensorID), 0 #skip if its the first value - No difference
-        difference = value - self.old_values[sensorID]
+        difference = [value - self.old_values[sensorID]]
+        if self.prev_difference[sensorID] == None:
+            self.prev_difference[sensorID] = difference[0]
+        else:
+            difference = [self.prev_difference[sensorID], difference[0]]
+            self.prev_difference[sensorID] = difference[1]
         self.old_values[sensorID] = value
         #return 0 if normal return 1 if faulty
         if self.detectors[sensorID].detector(difference) == 'F':
