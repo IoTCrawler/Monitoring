@@ -100,6 +100,7 @@ class FaultDetection:
             self.detectors[ngsi_id] = Detector()
             self.detectors[ngsi_id].get_data(result[ngsi_id])
             self.detectors[ngsi_id].train()
+            print("FD - training of", ngsi_id, "finished")
         else:
             print("no training data for", ngsi_id, "found")
 
@@ -142,7 +143,7 @@ class FaultDetection:
         if self.old_values[sensorID] == None:
             self.old_values[sensorID] = value
             return self.callVS(sensorID), 0 #skip if its the first value - No difference
-        difference = value - self.old_value[sensorID]
+        difference = value - self.old_values[sensorID]
         self.old_values[sensorID] = value
         #return 0 if normal return 1 if faulty
         if self.detectors[sensorID].detector(difference) == 'F':
