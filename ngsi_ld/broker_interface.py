@@ -111,10 +111,15 @@ def del_subscription(subscription):
 
 
 def _del_subscription(subscription):
-    server_url = "http://" + subscription.address + "/ngsi-ld/v1/subscriptions/"
-    server_url = server_url + subscription.id
+    # server_url = "http://" + subscription.address + "/ngsi-ld/v1/subscriptions/"
+    server_url = Config.getEnvironmentVariable('NGSI_ADDRESS') + "/ngsi-ld/v1/subscriptions/"
+    if type(subscription) == dict:
+        id = subscription['id']
+    else:
+        id = subscription.id
+    server_url += id
     r = requests.delete(server_url, headers=headers)
-    logger.debug("deleting subscription " + subscription.id + ": " + r.text)
+    logger.debug("deleting subscription " + id + ": " + r.text)
 
 
 def add_ngsi_attribute(ngsi_msg, eid):
@@ -189,7 +194,7 @@ def get_entity(entitiyid):
     try:
         # url = "http://" + Config.getEnvironmentVariable('NGSI_ADDRESS') + "/ngsi-ld/v1/entities/" + entitiyid
         url = Config.getEnvironmentVariable('NGSI_ADDRESS') + "/ngsi-ld/v1/entities/" + entitiyid
-        log.debug("loading:", url)
+        logger.debug("loading: " + url)
         r = requests.get(url, headers=headers)
         if r.status_code != 200:
             logger.error("Error requesting entity " + entitiyid + ": " + r.text)
@@ -229,6 +234,30 @@ def get_all_entities(entitytype):
         offset += 50
     return result
 
+def get_all_subscriptions():
+    limit = 50
+    offset = 0
+    subs = []
+    url = Config.getEnvironmentVariable('NGSI_ADDRESS') + "/ngsi-ld/v1/subscriptions/"
+    try:
+        while True:
+            params = {'limit': limit, 'offset': offset}
+            r = requests.get(url, headers=headers, params=params)
+            if r.status_code != 200:
+                logger.error("Error requesting entities of type " + entitytype + ": " + r.text)
+                break
+            tmpresult = r.json()
+            subs.extend(tmpresult)
+            if len(tmpresult) < limit:
+                break
+            offset += 50
+            # TODO: This leads to an endless loop - why?
+            break
+        return subs
+    except requests.exceptions.ConnectionError as e:
+        logger.error("Error while getting entities of type " + entitytype + ": " + str(e))
+
+
 
 def subscribe_forTypeId(ngsi_type, entityId, sublist):
     t = threading.Thread(target=_subscribe_forTypeId, args=(ngsi_type, entityId, sublist))
@@ -257,9 +286,9 @@ def _subscribe_forTypeId(ngsi_type, entityId, sublist):
         endpoint_extension = "/callback/sensor"
     elif ngsi_type is ngsi_parser.NGSI_Type.IoTStream:
         filename = 'static/json/subscription_iotstream.json'
-        endpoint_extension = "/callback/stream"
     elif ngsi_type is ngsi_parser.NGSI_Type.StreamObservation:
         filename = 'static/json/subscription_streamobservation.json'
+        endpoint_extension = "/callback/observation"
     elif ngsi_type is ngsi_parser.NGSI_Type.ObservableProperty:
         filename = 'static/json/subscription_observableproperty.json'
     elif ngsi_type is ngsi_parser.NGSI_Type.QoI:

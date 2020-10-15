@@ -1,3 +1,7 @@
+import glob
+import csv
+import dateutil
+
 class Reply():
     status = "ok"
     data = None
@@ -21,7 +25,7 @@ class Reply():
 def sensorID2CSVFilename(sensorID):
     return sensorID.replace(':', '_')
 
-def loadTraingData(sensorID, dropSeconds=False):
+def loadTrainingData(sensorID, dropSeconds=False):
     """
     We need to use the temporal interface of the broker to look for historic data, which is not working yet.
     As a workaround provide some historic data in CSV files, identifiyable by SensorID.

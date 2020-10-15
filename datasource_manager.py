@@ -5,7 +5,7 @@ from ngsi_ld import broker_interface
 from ngsi_ld import ngsi_parser
 from ngsi_ld.ngsi_parser import NGSI_Type
 
-logger = logging.getLogger('faultdetection')
+logger = logging.getLogger('monitoring')
 
 
 class DatasourceManager:
@@ -83,8 +83,12 @@ class DatasourceManager:
         broker_interface.add_subscription(subscription, self.subscriptions)
 
     def del_subscription(self, subid):
-        subscription = self.subscriptions.pop(subid)
-        broker_interface.del_subscription(subscription)
+        if type(subid) == str and subid in self.subscriptions:
+            subscription = self.subscriptions.pop(subid)
+            broker_interface.del_subscription(subscription)
+        elif type(subid) == dict:
+            # maybe parameter is subscription dict
+            broker_interface.del_subscription(subid)
 
     def del_all_subscriptions(self):
         for subid in list(self.subscriptions.keys()):
@@ -92,3 +96,12 @@ class DatasourceManager:
 
     def get_subscriptions(self):
         return self.subscriptions
+
+    def del_all_FD_subscriptions(self):
+        all_subscriptions = broker_interface.get_all_subscriptions()
+        logger.debug("Broker has " + str(len(all_subscriptions)) + " subscribtions at the moment")
+        for subscription in all_subscriptions:
+            id = subscription['id']
+            logger.debug("Deleting subscription with ID " + id)
+            if id.startswith("urn:ngsi-ld:Subscription:FD_"):
+                self.del_subscription(subscription)

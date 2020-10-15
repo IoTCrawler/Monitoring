@@ -3,6 +3,7 @@ import json
 import logging
 import uuid
 import threading
+import sys
 
 from flask import Flask, redirect, render_template, url_for, request, Blueprint, flash, Response
 
@@ -257,17 +258,21 @@ app.register_blueprint(bp2, url_prefix='/')
 app.jinja_env.filters['datetime'] = format_datetime
 
 def datasourceManagerInitialised():
+
+    # datasourceManager.del_all_FD_subscriptions()
+    # sys.exit(0)
     # TODO: subscribe to get notified for new sensor registrations and StreamObservations
     #       instanciate FD and FR for each stream
     #       start fault recovery traning for each new stream
     sensors = datasourceManager.sensors
     sensor_list = []
     for sID in sensors:
-        print("found sensor", sID)
-        print(sensors[sID])
+        # print("found sensor", sID)
+        # print(sensors[sID])
         sensor_list.append(sensors[sID])
     handle_new_sensor(sensor_list)
 
 if __name__ == "__main__":
     datasourceManager.initialise(datasourceManagerInitialised)
     app.run(host=Config.getEnvironmentVariable('FD_HOST'), port=int(Config.getEnvironmentVariable('FD_PORT')), debug=False)
+    datasourceManager.del_all_subscriptions()

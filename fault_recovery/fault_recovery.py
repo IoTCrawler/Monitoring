@@ -2,8 +2,8 @@
 
 class FaultRecovery():
 
-	def newSensor(sensorID, entity):
+	def newSensor(self, sensorID, entity):
 		print("FR newSensor called")
 
-	def update(sensorID, value):
+	def update(self, sensorID, value):
 		print("FR update callled")

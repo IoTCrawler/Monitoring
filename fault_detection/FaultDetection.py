@@ -26,6 +26,7 @@ class FaultDetection:
         self.detectors = {}
         self.old_values = {}
         self.no_of_faults = {}
+        self.no_of_misses = {}
         self.missedValues = {}
         self.createdVS = {}
         self.reset_counter = {}
@@ -95,6 +96,7 @@ class FaultDetection:
         #timeInterval, unit = ngsi_parser.get_sensor_updateinterval_and_unit(entity)
         #todo: if sensor has no training data, store values and create data
         if ngsi_id in result:
+            print("FD - train for", ngsi_id)
             self.detectors[ngsi_id] = Detector()
             self.detectors[ngsi_id].get_data(result[ngsi_id])
             self.detectors[ngsi_id].train()
