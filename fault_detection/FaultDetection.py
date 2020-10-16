@@ -116,7 +116,7 @@ class FaultDetection:
 
     #return 2 to delete VS, 0 for dont
     def delVS(self, sensorID):
-        if self.reset_counter[sensorID] > 10:
+        if self.reset_counter[sensorID] > 10 and self.createdVS[sensorID] == 1:
             self.no_of_faults[sensorID] = 0
             self.no_of_misses[sensorID] = 0
             self.createdVS[sensorID] = 0
