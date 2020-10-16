@@ -116,13 +116,13 @@ class FaultDetection:
 
     #return 2 to delete VS, 0 for dont
     def delVS(self, sensorID):
-        if self.reset_counter[sensorID] > 10 and self.createdVS[sensorID] == 1:
+        if self.reset_counter[sensorID] > 10:
             self.no_of_faults[sensorID] = 0
             self.no_of_misses[sensorID] = 0
-            self.createdVS[sensorID] = 0
-            return 2
-        else:
-            return 0
+            if self.createdVS[sensorID] == 1:
+                self.createdVS[sensorID] = 0
+                return 2
+        return 0
 
     #return: arg1 - 0,1 or 2 -> no operation, callVS, delete VS | arg2 - 0,1 -> Value found, Missing value
     def missingValue(self, sensorID, freq):
