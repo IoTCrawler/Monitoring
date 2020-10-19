@@ -126,11 +126,11 @@ class FaultDetection:
 
     #return: arg1 - 0,1 or 2 -> no operation, callVS, delete VS | arg2 - 0,1 -> Value found, Missing value
     def missingValue(self, sensorID, freq):
-        if self.missedValues[sensorID] == None:
+        if not sensorID in self.missedValues or self.missedValues[sensorID] == None:
             self.missedValues[sensorID] = freq
             return self.callVS(sensorID), 0 #no result from first value as no decrease in freq| todo: change this if freq always starts with 1
         freq_difference = freq - self.missedValues[sensorID]
-        self.missedValue[sensorID] = freq
+        self.missedValues[sensorID] = freq
         if freq_difference <= 0 and freq != 1 :
             self.no_of_faults[sensorID] = self.no_of_faults[sensorID] + 1
             self.no_of_misses[sensorID] = self.no_of_misses[sensorID] + 1
