@@ -1,6 +1,7 @@
 import glob
 import csv
 import dateutil
+import datetime
 
 class Reply():
     status = "ok"
@@ -144,13 +145,12 @@ def getSteamID(sensorID):
         msg = str(e.read())
         return Reply("error", description="Could not load Stream ID: " + str(e) + msg)
 
-def makeStreamObservation(sensorID, value):
-    # TODO: buffer sensor objects
-    sensor = getFromBuffer(sensorID)
-    if not sensor.getSteamID():
-        sID = getStreamID(sensorID)
-        if sID.success:
-            sensor.setStreamID(sID.data[streamID])
+def makeStreamObservation(sensor, value):
+    sensorID = sensor.ID()
+    # if not sensor.getSteamID():
+    #     sID = getStreamID(sensorID)
+    #     if sID.success:
+    #         sensor.setStreamID(sID.data[streamID])
 
     dt = datetime.datetime.now()
     dt = dt.replace(microsecond=0)

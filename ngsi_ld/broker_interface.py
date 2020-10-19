@@ -308,6 +308,17 @@ def _subscribe_forTypeId(ngsi_type, entityId, sublist):
             subscription['entities'][0]['id'] = entityId
         _add_subscription(subscription, sublist)
 
+def find_stream(qualityid):
+    try:
+        url = Config.getEnvironmentVariable('NGSI_ADDRESS') + "/ngsi-ld/v1/entities/"
+        params = {'type': 'http://purl.org/iot/ontology/iot-stream#IotStream', 'q': 'https://w3id.org/iot/qoi#hasQuality==' + qualityid}
+        r = requests.get(url, headers=headers, params=params)
+        if r.status_code != 200:
+            logger.error("Error finding streamobservation for stream " + qualityid + ": " + r.text)
+            return None
+        return r.json() # list of entities
+    except requests.exceptions.ConnectionError as e:
+        logger.error("Error while finding streamobservation for stream " + qualityid + ": " + str(e))
 
 def handleNewSensor(sensorId, sensors, observableproperties, subscriptions):
     # GET for sensor

@@ -12,9 +12,10 @@ from configuration import Config
 from ngsi_ld.ngsi_parser import NGSI_Type
 from other.exceptions import BrokerError
 from other.logging import DequeLoggerHandler
+from other.utils import makeStreamObservation
 from sensor import Sensor
 from datasource_manager import DatasourceManager
-from ngsi_ld.broker_interface import get_entity
+from ngsi_ld.broker_interface import get_entity, find_stream
 
 from fault_recovery.fault_recovery import FaultRecovery
 from fault_detection.FaultDetection import FaultDetection
@@ -44,8 +45,11 @@ bp2 = Blueprint('', __name__, static_url_path='', static_folder='static',
 datasourceManager = DatasourceManager()
 faultDetection = FaultDetection()
 faultRecovery = FaultRecovery()
+sensorsMap = {}
 sensorToObservationMap = {}
-qualityToSensorMap = {}
+# qualityToSensorMap = {}
+streamToSensorMap = {}
+qualityToStreamMap = {}
 
 
 def format_datetime(value):
@@ -161,6 +165,7 @@ def handle_new_sensor(data):
     for entity in data:
         s = Sensor(entity)
         sensorID = s.ID()
+        sensorsMap[sensorID] = s
         if s.isFaultDetectionEnabled():
             logger.debug("start FD for sensor: " + sensorID)
             datasourceManager.update(entity)
@@ -172,14 +177,21 @@ def handle_new_sensor(data):
             try:
                 if so:
                     iotstreamID = so['http://purl.org/iot/ontology/iot-stream#belongsTo']['object']
-                    stream = get_entity(iotstreamID)
-                    if stream:
-                        qualityID = stream['https://w3id.org/iot/qoi#hasQuality']['object']
-                        qualityToSensorMap[qualityID] = s
+                    streamToSensorMap[iotstreamID] = s
+                    # stream = get_entity(iotstreamID)
+                    # if stream:
+                    #     qualityID = stream['https://w3id.org/iot/qoi#hasQuality']['object']
+                    #     logger.debug(sensorID + " has Quality ID " + qualityID)
+                    #     qualityToSensorMap[qualityID] = s
+                    # else:
+                    #     logger.debug("Could not get StreamObservation entity " + iotstreamID)
+                else:
+                    logger.debug("Could not get Stream entity " + s.streamObservationID())
             except KeyError:
                 logger.debug("could not determine the ID of the Quality for sensor " + sensorID + ". Detection of missing values will not be possible")
         else:
-            logger.debug("FaultDetection not enabled for " + sensorID)
+            # logger.debug("FaultDetection not enabled for " + sensorID)
+            pass
 
     return Response('OK', status=200)
 
@@ -197,19 +209,24 @@ def callback_observation():
         streamObservationID = entity['id']
         value = entity['http://www.w3.org/ns/sosa/hasSimpleResult']['value']
         if streamObservationID in sensorToObservationMap:
-            threading.Thread(target=_call_FD_update, args=(sensorToObservationMap[streamObservationID].ID(), value)).start()
+            threading.Thread(target=_call_FD_update, args=(streamObservationID, sensorToObservationMap[streamObservationID].ID(), value)).start()
 
     return Response('OK', status=200)
 
-def _call_FD_update(sensorID, value):
-    createOrDelecteVS, isValueFaulty = faultDetection.update(sensorID, value)
-    logger.debug("FD verdict:  createOrDelecteVS = %d, isValueFaulty = %d" % (createOrDelecteVS, isValueFaulty))
+def _call_FD_update(streamObservationID, sensorID, value):
+    createOrDeleteVS, isValueFaulty = faultDetection.update(sensorID, value)
+    logger.debug("FD verdict:  createOrDeleteVS = %d, isValueFaulty = %d" % (createOrDeleteVS, isValueFaulty))
     if isValueFaulty:
-        faultRecovery.update(sensorID, value)
-        if createOrDelecteVS == 1:
+        sensor = sensorToObservationMap[streamObservationID]
+        imputeValue = faultRecovery.update(sensorID, value)
+        if imputeValue:
+            newStremObservation = makeStreamObservation(sensor, imputeValue)
+            # send to broker
+            datasourceManager.update(newStremObservation)
+        if createOrDeleteVS == 1:
             # TODO: call VS creater
             pass
-    if createOrDelecteVS == 2:
+    if createOrDeleteVS == 2:
         # TODO: call VS creator to remove VS
         pass
 
@@ -226,19 +243,53 @@ def callback_qoi():
 
     for entity in data:
         qoiID = entity['id']
-        if qoiID in qualityToSensorMap:
+        # find the stream if not already known
+        if qoiID in qualityToStreamMap:
+            streamID = qualityToStreamMap[qoiID]
+            if streamID in streamToSensorMap:
+                sensorID = streamToSensorMap[streamID].ID()
+            else:
+                logger.error("no sensor known having stream " + streamID + " with QoI " + qoiID)
+                continue
+        else:
+            logger.debug("searching StreamID for Quality with ID " + qoiID)
+            streams = find_stream(qoiID)
+            if len(streams) >= 1:
+                streamID = streams[0]['id']
+                if streamID in streamToSensorMap:
+                    sensorID = streamToSensorMap[streamID].ID()
+                    qualityToStreamMap[qoiID] = streamID
+                else:
+                    logger.error("no sensor known having stream " + streamID)
+                    continue
+            elif len(streams) > 1:
+                logger.warning("multiple streams have Quality with ID " + qoiID)
+            else:
+                logger.error("no stream found having quality " + qoiID)
+                continue
+
+        try:
             value = entity['https://w3id.org/iot/qoi#frequency']['https://w3id.org/iot/qoi#hasRatedValue']['value']
-            thread.Thread(target=_call_FD_missingValue, args=(qualityToSensorMap[qoiID].ID(), value)).start()
+            threading.Thread(target=_call_FD_missingValue, args=(qoiID, sensorID, value)).start()
+        except KeyError:
+            logger.error("QoI notification has no Frequency")
+
     return Response('OK', status=200)
 
-def _call_FD_missingValue(sensorID, freq):
-    createOrDelecteVS, isValueMissing = faultDetection.missingValue(sensorID, freq)
+def _call_FD_missingValue(qualityID, sensorID, freq):
+    createOrDeleteVS, isValueMissing = faultDetection.missingValue(sensorID, freq)
+    logger.debug("FD verdict:  createOrDeleteVS = %d, isValueMissing = %d" % (createOrDeleteVS, isValueMissing))
     if isValueMissing:
-        faultRecovery.update(sensorID, None)
-        if createOrDelecteVS == 1:
+        sensor = sensorsMap[sensorID]
+        imputeValue = faultRecovery.update(sensorID, None)
+        if imputeValue:
+            newStremObservation = makeStreamObservation(sensor, imputeValue)
+            # send to broker
+            datasourceManager.update(newStremObservation)
+        if createOrDeleteVS == 1:
             # call VS creater
             pass
-    elif createOrDelecteVS == 2:
+    elif createOrDeleteVS == 2:
         # call VS creater to delete
         pass
 
