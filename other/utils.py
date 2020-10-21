@@ -2,7 +2,12 @@ import glob
 import csv
 import dateutil
 import datetime
+import json
 
+IMPUTATION_PROPERTY_NAME = "http://www.fault-detection.de/hasImputedResult"
+SIMPLE_RESULT_PROPERTY_NAME = "http://www.w3.org/ns/sosa/hasSimpleResult"
+
+# needed? Monitoring is "controlled" by the MDR, not an API
 class Reply():
     status = "ok"
     data = None
@@ -67,7 +72,7 @@ def loadTrainingData(sensorID, dropSeconds=False):
 
     return result
 
-
+# still used??
 def getSensorLocationAndObservableProperty(sensorID):
     """
     Get the location (coordinates) and ObservableProperty ID from a sensor.
@@ -121,67 +126,88 @@ def getSensorLocationAndObservableProperty(sensorID):
 #         msg = str(e.read())
 #         return Reply("error", description="Could not load ObservableProperties: " + str(e) + msg)
 
-def getSteamID(sensorID):
-    """
-    Get the IoT-Stream ID belonging to a sensor identified by sensorID
-    """
-    try:
-        req = urllib.request.Request('http://{}/ngsi-ld/v1/entities/?type=http://purl.org/iot/ontology/iot-stream%23IotStream&q=http://purl.org/iot/ontology/iot-stream%23generatedBy=={}'.format(BROKER_ADDRESS, sensorID), headers={"Accept": "application/json"})
-        with urllib.request.urlopen(req, timeout=10) as response:
-            # print("loaded:", response.geturl())
-            if response.getcode() != 200: # can this happen? seems urlopen throws an exception if not successful
-                print("Error:", response.getcode())
-                return Reply("error")
-            else:
-                # print("getStreamID URL:", req.full_url)
-                data = response.read()
-                d = json.loads(data)
-                if len(d) == 0 or not "id" in d[0]:
-                    return Reply("error", description="ID for stream belonging to sensor not found")
-                return Reply(data={'streamID': d[0]["id"], "sensorID": sensorID})
+# still used??
+# def getSteamID(sensorID):
+#     """
+#     Get the IoT-Stream ID belonging to a sensor identified by sensorID
+#     """
+#     try:
+#         req = urllib.request.Request('http://{}/ngsi-ld/v1/entities/?type=http://purl.org/iot/ontology/iot-stream%23IotStream&q=http://purl.org/iot/ontology/iot-stream%23generatedBy=={}'.format(BROKER_ADDRESS, sensorID), headers={"Accept": "application/json"})
+#         with urllib.request.urlopen(req, timeout=10) as response:
+#             # print("loaded:", response.geturl())
+#             if response.getcode() != 200: # can this happen? seems urlopen throws an exception if not successful
+#                 print("Error:", response.getcode())
+#                 return Reply("error")
+#             else:
+#                 # print("getStreamID URL:", req.full_url)
+#                 data = response.read()
+#                 d = json.loads(data)
+#                 if len(d) == 0 or not "id" in d[0]:
+#                     return Reply("error", description="ID for stream belonging to sensor not found")
+#                 return Reply(data={'streamID': d[0]["id"], "sensorID": sensorID})
+#
+#     except urllib.error.HTTPError as e:
+#         print(e)
+#         msg = str(e.read())
+#         return Reply("error", description="Could not load Stream ID: " + str(e) + msg)
 
-    except urllib.error.HTTPError as e:
-        print(e)
-        msg = str(e.read())
-        return Reply("error", description="Could not load Stream ID: " + str(e) + msg)
+
+def _makeResultProperty(value, observedAt, isImputed=False):
+    valueTemplates = [
+        """"value" : %d""", #int
+        """"value" : %f""", #float
+        """"value" : "%s" """ #string/other
+    ]
+    vTemplate = 2
+    if type(value) == int:
+        vTemplate = 0
+    if type(value) == float:
+        vTemplate = 1
+
+    # template = """"%s" : {
+    template = """{"%s" : {
+      "type" : "Property",
+      """ + valueTemplates[vTemplate] + """,
+      "observedAt" : "%s"
+    },
+    "@context": [
+        "http://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"
+    ] }"""
+    # } """
+
+    resultType = IMPUTATION_PROPERTY_NAME if isImputed else "http://www.w3.org/ns/sosa/hasSimpleResult"
+    return template % (resultType, value, observedAt)
 
 def makeStreamObservation(sensor, value):
-    sensorID = sensor.ID()
-    # if not sensor.getSteamID():
-    #     sID = getStreamID(sensorID)
-    #     if sID.success:
-    #         sensor.setStreamID(sID.data[streamID])
+
+    # import: the stream ID has to be set before using the sensor.setStreamID() method
+    # TODO: do we provide both, the original and imputed, values in case auf faulty observation?
 
     dt = datetime.datetime.now()
     dt = dt.replace(microsecond=0)
     dt_iso = dt.isoformat() + "Z" # the MDR requires the Z at the end
-    ngsi_msg = """{
-  "id" : "%s",
-  "type" : "http://purl.org/iot/ontology/iot-stream#StreamObservation",
-  "http://purl.org/iot/ontology/iot-stream#belongsTo" : {
-    "type" : "Relationship",
-    "object" : "%s"
-  },
-  "http://www.w3.org/ns/sosa/hasSimpleResult" : {
-    "type" : "Property",
-    "value" : %f,
-    "observedAt" : "%s"
-  },
-  "http://www.w3.org/ns/sosa/madeBySensor" : {
-    "type" : "Relationship",
-    "object" : "%s"
-  },
-  "http://www.w3.org/ns/sosa/observedProperty" : {
-    "type" : "Relationship",
-    "object" : "%s"
-  },
-  "http://www.w3.org/ns/sosa/resultTime" : {
-    "type" : "Property",
-    "value" : "%s"
-  },
-  "@context" : [ "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld" ]
-}
-    """ % (sensor.streamObservationID(), sensor.getStreamID(), value, dt_iso, sensor.ID(), sensor.observesPropertyID(), dt_iso)
-    # TODO: send to broker
-    # brokerHelper.create_ngsi_entity(json.loads(ngsi_msg))
+#     ngsi_msg = """{
+#   "id" : "%s",
+#   "type" : "http://purl.org/iot/ontology/iot-stream#StreamObservation",
+#   "http://purl.org/iot/ontology/iot-stream#belongsTo" : {
+#     "type" : "Relationship",
+#     "object" : "%s"
+#   },
+#   %s,
+#   "http://www.w3.org/ns/sosa/madeBySensor" : {
+#     "type" : "Relationship",
+#     "object" : "%s"
+#   },
+#   "http://www.w3.org/ns/sosa/observedProperty" : {
+#     "type" : "Relationship",
+#     "object" : "%s"
+#   },
+#   "http://www.w3.org/ns/sosa/resultTime" : {
+#     "type" : "Property",
+#     "value" : "%s"
+#   },
+#   "@context" : [ "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld" ]
+# }
+#     """ % (sensor.streamObservationID(), sensor.getStreamID(), _makeResultProperty(value, dt_iso, True), sensor.ID(), sensor.observesPropertyID(), dt_iso)
+    ngsi_msg = _makeResultProperty(value, dt_iso, True)
     return json.loads(ngsi_msg)
