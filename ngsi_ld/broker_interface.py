@@ -133,12 +133,26 @@ def _add_ngsi_attribute(ngsi_msg, eid):
         # url = "http://" + Config.getEnvironmentVariable('NGSI_ADDRESS') + "/ngsi-ld/v1/entities/" + eid + "/attrs/"
         url = Config.getEnvironmentVariable('NGSI_ADDRESS') + "/ngsi-ld/v1/entities/" + eid + "/attrs/"
         r = requests.post(url, json=ngsi_msg, headers=headers)
-        if r.status_code != 204:
-            logger.debug("Attribute exists, patch it")
-            requests.patch(url, json=ngsi_msg, headers=headers)
+        if r.status_code != 204 and r.status_code != 207:
+            logger.error("Adding attribute faild. Status code = " + str(r.status_code))
+            # requests.patch(url, json=ngsi_msg, headers=headers)
     except requests.exceptions.ConnectionError as e:
         logger.error("Error while adding attribute to ngsi entity" + str(e))
 
+def delete_ngsi_attribute(attr_id, eid):
+    t = threading.Thread(target=_delete_ngsi_attribute, args=(attr_id, eid,))
+    t.start()
+
+
+def _delete_ngsi_attribute(attr_id, eid):
+    try:
+        logger.debug("Delete ngsi attribute to entity " + eid + " : " + attr_id)
+        url = Config.getEnvironmentVariable('NGSI_ADDRESS') + "/ngsi-ld/v1/entities/" + eid + "/attrs/" + attr_id
+        r = requests.delete(url, headers=headers)
+        if r.status_code != 204:
+            logger.error("Deleting attribute faild. Status code = " + str(r.status_code))
+    except requests.exceptions.ConnectionError as e:
+        logger.error("Error while adding attribute to ngsi entity" + str(e))
 
 def create_ngsi_entity(ngsi_msg):
     t = threading.Thread(target=_create_ngsi_entity, args=(ngsi_msg,))
