@@ -40,7 +40,7 @@ class DatasourceManager:
             logger.debug("Initialise entity " + ngsi_parser.get_id(entity))
             self.update(entity)
 
-    def update(self, ngsi_data):
+    def update(self, ngsi_data, sendIt=False):
         ngsi_id, ngsi_type = ngsi_parser.get_IDandType(ngsi_data)
         # check type
         if ngsi_type is NGSI_Type.IoTStream:
@@ -51,6 +51,15 @@ class DatasourceManager:
             self.sensors[ngsi_id] = ngsi_data
         elif ngsi_type is NGSI_Type.ObservableProperty:
             self.observableproperties[ngsi_id] = ngsi_data
+        if sendIt:
+            broker_interface.create_ngsi_entity(ngsi_data)
+
+    def replace_attr(self, old_attr_id, new_attr, entity_id):
+        # broker_interface.delete_ngsi_attribute(old_attr_id, entity_id) # remove the old attribute?
+        broker_interface.add_ngsi_attribute(new_attr, entity_id)
+
+    def remove_attr(self, entity_id, attr_id):
+        broker_interface.delete_ngsi_attribute(attr_id, entity_id)
 
     def get_sensor(self, sensor_id):
         try:
