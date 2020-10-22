@@ -36,6 +36,7 @@ ENV NGSI_ADDRESS http://155.54.95.248:9090
 ENV FD_HOST 0.0.0.0
 ENV FD_PORT 8082
 ENV FD_CALLBACK https://mobcom.ecs.hs-osnabrueck.de/faultdetection/callback
+ENV VS_CREATER_ADDRESS http://staging.vs-creator.iotcrawler.eu
 
 EXPOSE $FD_PORT
 
