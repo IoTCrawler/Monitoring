@@ -13,6 +13,7 @@ from ngsi_ld.ngsi_parser import NGSI_Type
 from other.exceptions import BrokerError
 from other.logging import DequeLoggerHandler
 from other.utils import makeStreamObservation, IMPUTATION_PROPERTY_NAME, SIMPLE_RESULT_PROPERTY_NAME
+from other.vs_creater_interface import replaceBrokenSensor, stopVirtualSensor
 from sensor import Sensor
 from datasource_manager import DatasourceManager
 from ngsi_ld.broker_interface import get_entity, find_stream
@@ -165,6 +166,7 @@ def callback():
 
 def handle_new_sensor(data):
     for entity in data:
+        entity = ngsi_parser.resolve_prefixes(entity)
         s = Sensor(entity)
         sensorID = s.ID()
         sensorsMap[sensorID] = s
@@ -201,6 +203,7 @@ def callback_observation():
         data = [data]
 
     for entity in data:
+        entity = ngsi_parser.resolve_prefixes(entity)
         if IMPUTATION_PROPERTY_NAME in entity: # no need to process our own StreamObservation
             print("IMPUTED ENTITY:", entity)
             continue
@@ -214,6 +217,7 @@ def callback_observation():
 def _call_FD_update(streamObservationID, sensorID, value):
     createOrDeleteVS, isValueFaulty = faultDetection.update(sensorID, value)
     logger.debug("FD verdict:  createOrDeleteVS = %d, isValueFaulty = %d" % (createOrDeleteVS, isValueFaulty))
+
     if isValueFaulty:
         # TODO: callback for the FR? - requires to pass the sensor object, not the sensorID
         sensor = sensorToObservationMap[streamObservationID]
@@ -224,16 +228,15 @@ def _call_FD_update(streamObservationID, sensorID, value):
             datasourceManager.replace_attr(SIMPLE_RESULT_PROPERTY_NAME, newStremObservation, streamObservationID)
             imputedStreamObservationIDs.append(streamObservationID)
         if createOrDeleteVS == 1:
-            # TODO: call VS creater
-            pass
+            replaceBrokenSensor(sensorID) # through virtual sensor
+
     elif streamObservationID in imputedStreamObservationIDs:
         # sensor provide a new and valid observation, remove the imputed one
         datasourceManager.remove_attr(streamObservationID, IMPUTATION_PROPERTY_NAME)
         imputedStreamObservationIDs.remove(streamObservationID)
 
     if createOrDeleteVS == 2:
-        # TODO: call VS creator to remove VS
-        pass
+        stopVirtualSensor(sensorID)
 
 def _FR_callback(sensor, imputeValue):
     if imputeValue:
@@ -252,6 +255,7 @@ def callback_qoi():
         data = [data]
 
     for entity in data:
+        entity = ngsi_parser.resolve_prefixes(entity)
         qoiID = entity['id']
         sensorID = None
         if qoiID in qualityToStreamMap:
@@ -276,7 +280,7 @@ def callback_qoi():
                 else:
                     logger.error("no sensor known having stream " + streamID)
                     continue
-            elif len(streams) > 1:
+            elif streams and len(streams) > 1:
                 logger.warning("multiple streams have Quality with ID " + qoiID)
             else:
                 logger.error("no stream found having quality " + qoiID)
@@ -306,7 +310,8 @@ def _call_FD_missingValue(qualityID, sensorID, freq):
             logger.debug("FR did not provide imputable value")
         if createOrDeleteVS == 1:
             # call VS creater
-            pass
+            replaceBrokenSensor(sensorID) # through virtual sensor
+
     elif sensor.streamObservationID() in imputedStreamObservationIDs: # The Monitoring should receive the Observation before
                                                                       # so this should never be true, but in case Monitoring missed it.
         # sensor provide a new and valid observation, remove the imputed one
@@ -315,7 +320,7 @@ def _call_FD_missingValue(qualityID, sensorID, freq):
 
     if createOrDeleteVS == 2:
         # call VS creater to delete
-        pass
+        stopVirtualSensor(sensorID)
 
 # TODO: remove this blueprint???
 @bp2.route('/', methods=['GET'])
