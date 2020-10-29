@@ -14,21 +14,26 @@ class NGSI_Type(Enum):
     ObservableProperty = 5
     QoI = 6
 
-def resolve_prefixes(ngsi_data):
-    if not '@context' in ngsi_data or len(ngsi_data['@context']) <= 1:
-        return ngsi_data
-    context_map = ngsi_data['@context'][1]
-    copy_data = copy.deepcopy(ngsi_data)
-    for key in ngsi_data:
+def _resolve_prefixes_dict(data, context_map):
+    copy_data = copy.deepcopy(data)
+    for key in data:
         for prefix in context_map:
             p = prefix + ":"
-            if type(ngsi_data[key]) == str and ngsi_data[key].startswith(p):
+            if type(data[key]) == dict:
+                copy_data[key] = _resolve_prefixes_dict(data[key], context_map)
+            if (type(data[key]) == str or type(data[key]) == unicode) and data[key].startswith(p):
                 copy_data[key] = copy_data[key].replace(p, context_map[prefix])
             if key.startswith(p):
                 newkey = key.replace(p, context_map[prefix])
                 copy_data[newkey] = copy_data[key]
                 del copy_data[key]
     return copy_data
+
+def resolve_prefixes(ngsi_data):
+    if not '@context' in ngsi_data or len(ngsi_data['@context']) <= 1:
+        return ngsi_data
+    context_map = ngsi_data['@context'][1]
+    return _resolve_prefixes_dict(ngsi_data, context_map)
 
 
 def get_type(ngsi_data):
