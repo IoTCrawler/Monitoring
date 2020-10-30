@@ -9,7 +9,7 @@ from flask import Flask, redirect, render_template, url_for, request, Blueprint,
 
 import ngsi_ld.ngsi_parser
 from configuration import Config
-from ngsi_ld.ngsi_parser import NGSI_Type
+from ngsi_ld.ngsi_parser import NGSI_Type, resolve_prefixes
 from other.exceptions import BrokerError
 from other.logging import DequeLoggerHandler
 from other.utils import makeStreamObservation, IMPUTATION_PROPERTY_NAME, SIMPLE_RESULT_PROPERTY_NAME
@@ -166,7 +166,7 @@ def callback():
 
 def handle_new_sensor(data):
     for entity in data:
-        entity = ngsi_parser.resolve_prefixes(entity)
+        entity = resolve_prefixes(entity)
         s = Sensor(entity)
         sensorID = s.ID()
         sensorsMap[sensorID] = s
@@ -203,7 +203,7 @@ def callback_observation():
         data = [data]
 
     for entity in data:
-        entity = ngsi_parser.resolve_prefixes(entity)
+        entity = resolve_prefixes(entity)
         if IMPUTATION_PROPERTY_NAME in entity: # no need to process our own StreamObservation
             print("IMPUTED ENTITY:", entity)
             continue
@@ -255,7 +255,7 @@ def callback_qoi():
         data = [data]
 
     for entity in data:
-        entity = ngsi_parser.resolve_prefixes(entity)
+        entity = resolve_prefixes(entity)
         qoiID = entity['id']
         sensorID = None
         if qoiID in qualityToStreamMap:
