@@ -14,6 +14,82 @@ headers = {}
 headers.update({'content-type': 'application/ld+json'})
 headers.update({'accept': 'application/ld+json'})
 
+# returns the label of a ObservableProperty identified by the its ID
+# input: propertyID - the ID of the ObservableProperty as string
+# output: the label as string
+def get_observable_property_label(propertyID):
+    """
+    Get the label for an ObservableProperty.
+    """
+    try:
+        server_url = '{}/ngsi-ld/v1/entities/{}'.format(Config.getEnvironmentVariable('NGSI_ADDRESS'), propertyID)
+        r = requests.get(server_url, headers=headers)
+        if r.status_code != 200:
+            logger.error("Error gettign property label: " + str(r.status_code))
+            return None
+        else:
+            d = r.json()
+            if not "http://www.w3.org/2000/01/rdf-schema#label" in d:
+                return None
+            label = d["http://www.w3.org/2000/01/rdf-schema#label"]
+            if not "value" in label:
+                return None
+            label = label["value"]
+            return label
+    except Exception as e:
+        logger.error(e)
+        return None
+
+
+def find_neighbor_sensors(sensorID, propertyLabel, latitude, longitude, maxDistance):
+    """
+    input: lat, lng of desired location
+            propertyLabel ObservalbeProperty by label; if None search for all labels
+            maxDistance maximum distance of correlating sensors
+    output: instance of Reply with data = [NGSI-LD code for a sensor]
+
+    2 step approach: 1. collect all ObservableProperty IDs and 2. get all sensors in the area of intereset
+
+    http://metadata-repository-scorpiobroker.35.241.228.250.nip.io/ngsi-ld/v1/entities/?type=http://www.w3.org/ns/sosa/Sensor/ObservableProperty&q=http://www.w3.org/2000/01/rdf-schema%23label==%22humidity%22
+    http://metadata-repository-scorpiobroker.35.241.228.250.nip.io/ngsi-ld/v1/entities?type=http://www.w3.org/ns/sosa/Sensor&georel=near;maxDistance==200000&geometry=Point&coordinates=[52,8]&q=http://www.w3.org/ns/sosa/observes==urn:ngsi-ld:ObservableProperty:B4:E6:2D:8A:20:DD:Humidity
+    """
+
+
+    try:
+        sensors = []
+        if not propertyLabel:
+            server_url = '{}/ngsi-ld/v1/entities/?type=http://www.w3.org/ns/sosa/ObservableProperty'.format(Config.getEnvironmentVariable('NGSI_ADDRESS'))
+        else:
+            server_url = '{}/ngsi-ld/v1/entities/?type=http://www.w3.org/ns/sosa/ObservableProperty&q=http://www.w3.org/2000/01/rdf-schema%23label==%22{}%22'.format(Config.getEnvironmentVariable('NGSI_ADDRESS'), propertyLabel)
+        r = requests.get(server_url, headers=headers)
+        # print("loaded:", response.geturl())
+        if r.status_code != 200: # can this happen? seems urlopen throws an exception if not successful
+            logger.error("Error getting ObservableProperty IDs: " + str(r.status_code))
+            return None
+        else:
+            d = r.json()
+            op_ids = []
+            for op in d:
+                if "id" in op:
+                    op_ids.append(op['id'])
+            # now load all the sensors with the IDs found
+            print("property ids:", op_ids)
+            for i in op_ids:
+                server_url = '{}/ngsi-ld/v1/entities?type=http://www.w3.org/ns/sosa/Sensor&georel=near;maxDistance=={}&geometry=Point&coordinates=[{},{}]&q=http://www.w3.org/ns/sosa/observes=={}'.format(Config.getEnvironmentVariable('NGSI_ADDRESS'), maxDistance, latitude, longitude, i)
+                r = requests.get(server_url, headers=headers)
+                if r.status_code != 200: # can this happen? seems urlopen throws an exception if not successful
+                    logger.error("Error getting ObservableProperty IDs: " + str(r.status_code))
+                    return None
+                d = r.json()
+                for s in d:
+                    if s['id'] != sensorID:
+                        sensors.append(s)
+        return sensors
+
+    except Exception as e:
+        logger.error(e)
+        return None
+
 
 # this method is mainly for testing etc as subscriptions are lost during restart,
 # in addition ngrok won't fit for old subscriptions
