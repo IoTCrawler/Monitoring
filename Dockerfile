@@ -2,7 +2,7 @@ FROM ubuntu:18.04
 #FROM python:3
 
 RUN apt-get update
-RUN apt-get install -y python3 python3-pip build-essential python3-dev
+RUN apt-get install -y python3 python3-pip build-essential python3-dev octave
 RUN python3 -m pip install --upgrade pip
 
 #RUN pip3 install requests flask python-dateutil
@@ -37,6 +37,8 @@ ENV FD_HOST 0.0.0.0
 ENV FD_PORT 8082
 ENV FD_CALLBACK https://mobcom.ecs.hs-osnabrueck.de/faultdetection/callback
 ENV VS_CREATER_ADDRESS http://staging.vs-creator.iotcrawler.eu
+#ENV RECOVERY_METHOD MCMC
+ENV RECOVERY_METHOD BME
 
 EXPOSE $FD_PORT
 
