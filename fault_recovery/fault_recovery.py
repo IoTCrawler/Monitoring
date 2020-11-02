@@ -1,4 +1,5 @@
 import threading
+from fault_recovery_mcmc import FaultRecoveryMCMC
 
 class FaultRecovery:
     # ................................................ Variables ......................................................
