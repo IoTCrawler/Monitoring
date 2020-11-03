@@ -2,7 +2,7 @@ FROM ubuntu:18.04
 #FROM python:3
 
 RUN apt-get update
-RUN apt-get install -y python3 python3-pip build-essential python3-dev octave
+RUN apt-get install -y python3 python3-pip build-essential python3-dev octave octave-statistics r-base r-cran-randomfields
 RUN python3 -m pip install --upgrade pip
 
 #RUN pip3 install requests flask python-dateutil
@@ -10,6 +10,8 @@ RUN mkdir /monitoring
 WORKDIR /monitoring
 COPY requirements.txt /monitoring/requirements.txt
 RUN pip3 install -r /monitoring/requirements.txt
+
+RUN R -e "install.packages('geoR')"
 
 #RUN apt-get update
 #RUN apt-get install -y python3 python3-pip

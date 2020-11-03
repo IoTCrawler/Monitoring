@@ -47,11 +47,11 @@ class Config:
         return envMap
 
     @classmethod
-    def getEnvironmentVariable(cls, variable):
+    def getEnvironmentVariable(cls, variable, default=None):
         try:
             return os.environ[variable]
         except KeyError:
-            return None
+            return default
 
 
 if __name__ == "__main__":

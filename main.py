@@ -18,6 +18,9 @@ from sensor import Sensor
 from datasource_manager import DatasourceManager
 from ngsi_ld.broker_interface import get_entity, find_stream
 
+#just for testing - remove later
+from ngsi_ld.broker_interface import find_neighbor_sensors, get_observable_property_label
+
 from fault_recovery.fault_recovery import FaultRecovery
 from fault_detection.FaultDetection import FaultDetection
 
@@ -256,6 +259,10 @@ def callback_qoi():
 
     for entity in data:
         entity = resolve_prefixes(entity)
+        if not 'https://w3id.org/iot/qoi#frequency' in entity:
+            # the meta-data for this sensor did not specify an update interval
+            # impossible to dermine if a observation is missing
+            continue
         qoiID = entity['id']
         sensorID = None
         if qoiID in qualityToStreamMap:
@@ -354,8 +361,50 @@ def datasourceManagerInitialised():
     handle_new_sensor(sensor_list)
 
 if __name__ == "__main__":
-    # datasourceManager.del_all_FD_subscriptions()
+    # label = get_observable_property_label("urn:ngsi-ld:ObservableProperty:AvailableParkingSpaces")
+    # print(label)
+    # sensors = find_neighbor_sensors("urn:ngsi-ld:Sensor:ora18", label, -1.127544427, 37.99218475, 2000)
+    # print(sensors)
+    #
+    #
+    # # datasourceManager.del_all_FD_subscriptions()
+
+    # testing BME FR
+    # urn:ngsi-ld:Sensor:ora85
+    # e = """{
+    #     "id": "urn:ngsi-ld:Sensor:ora85",
+    #     "type": "http://www.w3.org/ns/sosa/Sensor",
+    #     "http://www.w3.org/ns/sosa/observes": {
+    #         "type": "Relationship",
+    #         "object": "urn:ngsi-ld:ObservableProperty:AvailableParkingSpaces"
+    #     },
+    #     "location": {
+    #         "type": "GeoProperty",
+    #         "value": {
+    #             "type": "Point",
+    #             "coordinates": [
+    #                 -1.127631569,
+    #                 37.98116188
+    #             ]
+    #         }
+    #     },
+    #     "@context": [
+    #         "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"
+    #     ]
+    # }"""
+    # from fault_recovery.fault_recovery_bme import FaultRecoveryBME
+    # fr = FaultRecoveryBME()
+    # fr.newSensor("urn:ngsi-ld:Sensor:ora85", e)
+    # input("trained")
+    # fr.update("urn:ngsi-ld:Sensor:ora85", None)
+    # input()
+    # fr.update("urn:ngsi-ld:Sensor:ora85", None)
+    # input()
+    # fr.update("urn:ngsi-ld:Sensor:ora85", None)
+    # input()
     # sys.exit(0)
+
+    # real code starting here
     datasourceManager.initialise(datasourceManagerInitialised)
     app.run(host=Config.getEnvironmentVariable('FD_HOST'), port=int(Config.getEnvironmentVariable('FD_PORT')), debug=False)
     datasourceManager.del_all_subscriptions()
