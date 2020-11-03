@@ -109,6 +109,10 @@ class FaultRecoveryBME:
             print(self.varparam)
 
     def update(self, sensorID, value):
+        if not self.neighbours or len(self.neighbours) == 0:
+            # training not finished or no neighbours found, nothing we can do
+            return
+        print("FR BME update called")
         data = [263.0, 217.0] #known values from valid sensors
         id = 1
         ids = [2,3] #list(range(2, len(self.neighbours)+2))
