@@ -7,6 +7,7 @@ from copy import deepcopy
 import dateutil.parser as dparser
 import pymc3 as pm
 import pickle
+import os.path
 
 
 class FaultRecoveryMCMC:
@@ -18,6 +19,9 @@ class FaultRecoveryMCMC:
     burninTime = 200
 
     # ................................................ Functions() ....................................................
+
+    def makeModelFilename(self, filename):
+        return os.path.join(os.path.dirname(os.path.abspath(__file__)), "models", filename.replace(':', '_'))
 
     def newSensor(self, sensorID, entity):
         print("FR newSensor called")
@@ -41,27 +45,32 @@ class FaultRecoveryMCMC:
             final.append(traceArray[i])
         finalArray = np.asarray(final)
 
-        pickle_out = open("modelout_" + str(sensorID) + ".pickle", "wb")
+        pickle_out = open(self.makeModelFilename("modelout_" + sensorID + ".pickle"), "wb")
         pickle.dump(finalArray, pickle_out)
         pickle_out.close()
         return
 
     def update(self, sensorID, value):
         print("FR update callled")
-        timeStamp = value
+        timeStamp = (dparser.parse(str(value), fuzzy=True).timestamp() % 10000)
+        print(timeStamp)
         missingValuePosition = 4
         # pickle_in_data = open("models/modelout.pickle", "rb")
-        pickle_in_data = open("models/modelout_" + str(sensorID) + ".pickle", "rb")
-        pickle_in_time = open("models/timestamps_" + str(sensorID) + ".pickle", "rb")
+        pickle_in_data = open(self.makeModelFilename("modelout_" + sensorID + ".pickle"), "rb")
+        pickle_in_time = open(self.makeModelFilename("timestamps_" + sensorID + ".pickle"), "rb")
         myinputTime = pickle.load(pickle_in_time) % 10000  # extract the time
+        print(myinputTime)
         for i in range(len(myinputTime)):
-            if (myinputTime[i] == timeStamp):
+            if (myinputTime[i] >= timeStamp):
+                print("yes")
                 missingValuePosition = i
+                break
         myinput = pickle.load(pickle_in_data)
         imputedValue = int(
             np.mean(myinput[abs(missingValuePosition - self.windows): abs(missingValuePosition + self.windows)]))
         pickle_in_time.close()
         pickle_in_data.close()
+        print("predicted value:", imputedValue)
         return imputedValue
 
     def get_norm_dist(self, sensorID):
@@ -80,7 +89,7 @@ class FaultRecoveryMCMC:
         ind = np.argsort(originalValues[:, 1])
         originalValuesSorted = originalValues[ind]
 
-        timestamp_filename = "models/timestamps_" + str(sensorID) + ".pickle"
+        timestamp_filename = self.makeModelFilename("timestamps_" + sensorID + ".pickle")
         # pickle_out = open("timestamps.pickle", "wb")
         pickle_out = open(timestamp_filename, "wb")
         pickle.dump(originalValuesSorted[:, 1], pickle_out)
