@@ -8,25 +8,34 @@ IMPUTATION_PROPERTY_NAME = "http://www.fault-detection.de/hasImputedResult"
 SIMPLE_RESULT_PROPERTY_NAME = "http://www.w3.org/ns/sosa/hasSimpleResult"
 
 # needed? Monitoring is "controlled" by the MDR, not an API
-class Reply():
-    status = "ok"
-    data = None
-    description = ""
-    success = False
+# class Reply():
+#     status = "ok"
+#     data = None
+#     description = ""
+#     success = False
+#
+#     def __init__(self, status="ok", data=None, description=""):
+#         self.status = status
+#         self.data = data
+#         self.description = description
+#         self.success = self.status == "ok"
+#
+#     def __repr__(self):
+#         return json.dumps({"status": self.status, "success": True if self.status == "ok" else False, "description": self.description, "data": self.data})
+#
+#     def answer(self):
+#         return self.__repr__()
 
-    def __init__(self, status="ok", data=None, description=""):
-        self.status = status
-        self.data = data
-        self.description = description
-        self.success = self.status == "ok"
+class ObservationCache:
+    __cache = {}
 
-    def __repr__(self):
-        return json.dumps({"status": self.status, "success": True if self.status == "ok" else False, "description": self.description, "data": self.data})
+    @classmethod
+    def update(cls, id, value):
+        cls.__cache[id] = value
 
-    def answer(self):
-        return self.__repr__()
-
-
+    @classmethod
+    def get(cls, id, default=None):
+        return cls.__cache[id] if id in cls.__cache else default
 
 def sensorID2CSVFilename(sensorID):
     return sensorID.replace(':', '_')

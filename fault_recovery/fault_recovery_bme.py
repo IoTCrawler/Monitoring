@@ -6,7 +6,7 @@ import os.path
 from ngsi_ld.broker_interface import find_neighbor_sensors, get_observable_property_label
 import subprocess
 from sensor import Sensor
-from other.utils import loadTrainingData
+from other.utils import loadTrainingData, ObservationCache
 from copy import deepcopy
 
 
@@ -60,8 +60,8 @@ class FaultRecoveryBME:
 
             # header line (just column indices)
             lines = [ " ".join(list(map(str, range(shortest)))) ] # '0  1  2  3 .... shortest-1'
-            # extract all values of the 'shortest' first samples and convert then to strings
-            values = list(map(lambda x: str(x['value']), trainingDataAll[sensorID][0:shortest]))
+            # extract all values of the 'shortest' newest samples and convert them to strings
+            values = list(map(lambda x: str(x['value']), trainingDataAll[sensorID][-shortest:]))
             lines.append("0 %s" % (" ".join(values),) )
 
             i = 0
@@ -74,7 +74,7 @@ class FaultRecoveryBME:
                     rm_idx.append(x)
                     continue
                 i += 1
-                values = list(map(lambda x: str(x['value']), trainingDataAll[n.ID()][0:shortest]))
+                values = list(map(lambda x: str(x['value']), trainingDataAll[n.ID()][-shortest:]))
                 lines.append("%d %s" % (i, " ".join(values)) )
             datosS = "\n".join(lines)
 
@@ -109,13 +109,13 @@ class FaultRecoveryBME:
             print(self.varparam)
 
     def update(self, sensorID, value):
-        if not self.neighbours or len(self.neighbours) == 0:
+        if not self.varparam or len(self.neighbours) == 0:
             # training not finished or no neighbours found, nothing we can do
-            return
+            return None
         print("FR BME update called")
-        data = [263.0, 217.0] #known values from valid sensors
+        data = [ObservationCache.get(n.ID(), 0.0) for n in self.neighbours] # [263.0, 217.0] #known values from valid sensors
         id = 1
-        ids = [2,3] #list(range(2, len(self.neighbours)+2))
+        ids = list(range(2, len(self.neighbours)+2)) #[2,3] #
 
         if not self.locations_array:
             # locations = [[37.989825, -1.132959],[37.992907, -1.133843],[37.994971, -1.129519]]
@@ -124,6 +124,7 @@ class FaultRecoveryBME:
             for n in self.neighbours:
                 lat, lng = n.coordinates()
                 self.locations_array.append([lat, lng])
+
         prediction = octave.hardBME(id, ids, data, self.locations_array, self.varmodel, self.varparam)
         print("BME prediction:", prediction)
         return prediction
