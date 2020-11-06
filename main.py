@@ -12,7 +12,7 @@ from configuration import Config
 from ngsi_ld.ngsi_parser import NGSI_Type, resolve_prefixes
 from other.exceptions import BrokerError
 from other.logging import DequeLoggerHandler
-from other.utils import makeStreamObservation, IMPUTATION_PROPERTY_NAME, SIMPLE_RESULT_PROPERTY_NAME
+from other.utils import makeStreamObservation, ObservationCache, IMPUTATION_PROPERTY_NAME, SIMPLE_RESULT_PROPERTY_NAME
 from other.vs_creater_interface import replaceBrokenSensor, stopVirtualSensor
 from sensor import Sensor
 from datasource_manager import DatasourceManager
@@ -212,8 +212,10 @@ def callback_observation():
             continue
         streamObservationID = entity['id']
         value = entity['http://www.w3.org/ns/sosa/hasSimpleResult']['value']
+        sensorID = sensorToObservationMap[streamObservationID].ID()
+        ObservationCache.update(sensorID, value)
         if streamObservationID in sensorToObservationMap:
-            threading.Thread(target=_call_FD_update, args=(streamObservationID, sensorToObservationMap[streamObservationID].ID(), value)).start()
+            threading.Thread(target=_call_FD_update, args=(streamObservationID, sensorID, value)).start()
 
     return Response('OK', status=200)
 
@@ -371,38 +373,52 @@ if __name__ == "__main__":
 
     # testing BME FR
     # urn:ngsi-ld:Sensor:ora85
-    # e = """{
-    #     "id": "urn:ngsi-ld:Sensor:ora85",
-    #     "type": "http://www.w3.org/ns/sosa/Sensor",
-    #     "http://www.w3.org/ns/sosa/observes": {
-    #         "type": "Relationship",
-    #         "object": "urn:ngsi-ld:ObservableProperty:AvailableParkingSpaces"
-    #     },
-    #     "location": {
-    #         "type": "GeoProperty",
-    #         "value": {
-    #             "type": "Point",
-    #             "coordinates": [
-    #                 -1.127631569,
-    #                 37.98116188
-    #             ]
-    #         }
-    #     },
-    #     "@context": [
-    #         "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"
-    #     ]
-    # }"""
-    # from fault_recovery.fault_recovery_bme import FaultRecoveryBME
+    e = """{
+        "id": "urn:ngsi-ld:Sensor:ora85",
+        "type": "http://www.w3.org/ns/sosa/Sensor",
+        "http://www.w3.org/ns/sosa/observes": {
+            "type": "Relationship",
+            "object": "urn:ngsi-ld:ObservableProperty:AvailableParkingSpaces"
+        },
+        "location": {
+            "type": "GeoProperty",
+            "value": {
+                "type": "Point",
+                "coordinates": [
+                    -1.127631569,
+                    37.98116188
+                ]
+            }
+        },
+        "@context": [
+            "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"
+        ]
+    }"""
+    from fault_recovery.fault_recovery_bme import FaultRecoveryBME
+    from fault_recovery.fault_recovery_mcmc import FaultRecoveryMCMC
+    fr = FaultRecoveryMCMC()
     # fr = FaultRecoveryBME()
-    # fr.newSensor("urn:ngsi-ld:Sensor:ora85", e)
-    # input("trained")
-    # fr.update("urn:ngsi-ld:Sensor:ora85", None)
-    # input()
-    # fr.update("urn:ngsi-ld:Sensor:ora85", None)
-    # input()
-    # fr.update("urn:ngsi-ld:Sensor:ora85", None)
-    # input()
-    # sys.exit(0)
+    fr.newSensor("urn:ngsi-ld:Sensor:ora85", e)
+    input("trained")
+    ObservationCache.update("urn:ngsi-ld:Sensor:ora126", 250.0)
+    ObservationCache.update("urn:ngsi-ld:Sensor:ora127", 240.0)
+    ObservationCache.update("urn:ngsi-ld:Sensor:ora128", 270.0)
+    ObservationCache.update("urn:ngsi-ld:Sensor:ora129", 210.0)
+    fr.update("urn:ngsi-ld:Sensor:ora85", datetime.datetime.now().isoformat())
+    input()
+    ObservationCache.update("urn:ngsi-ld:Sensor:ora126", 150.0)
+    ObservationCache.update("urn:ngsi-ld:Sensor:ora127", 300.0)
+    ObservationCache.update("urn:ngsi-ld:Sensor:ora128", 210.0)
+    ObservationCache.update("urn:ngsi-ld:Sensor:ora129", 280.0)
+    fr.update("urn:ngsi-ld:Sensor:ora85", datetime.datetime.now().isoformat())
+    input()
+    ObservationCache.update("urn:ngsi-ld:Sensor:ora126", 180.0)
+    ObservationCache.update("urn:ngsi-ld:Sensor:ora127", 250.0)
+    ObservationCache.update("urn:ngsi-ld:Sensor:ora128", 220.0)
+    ObservationCache.update("urn:ngsi-ld:Sensor:ora129", 180.0)
+    fr.update("urn:ngsi-ld:Sensor:ora85", datetime.datetime.now().isoformat())
+    input()
+    sys.exit(0)
 
     # real code starting here
     datasourceManager.initialise(datasourceManagerInitialised)

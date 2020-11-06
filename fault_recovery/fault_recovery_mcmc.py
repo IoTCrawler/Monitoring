@@ -52,7 +52,7 @@ class FaultRecoveryMCMC:
 
     def update(self, sensorID, value):
         print("FR update callled")
-        timeStamp = (dparser.parse(str(value), fuzzy=True).timestamp() % 10000)
+        timeStamp = dparser.parse(str(value), fuzzy=True).timestamp()
         print(timeStamp)
         missingValuePosition = 4
         # pickle_in_data = open("models/modelout.pickle", "rb")
@@ -61,7 +61,7 @@ class FaultRecoveryMCMC:
         myinputTime = pickle.load(pickle_in_time) % 10000  # extract the time
         print(myinputTime)
         for i in range(len(myinputTime)):
-            if (myinputTime[i] >= timeStamp):
+            if (myinputTime[i] == timeStamp):
                 print("yes")
                 missingValuePosition = i
                 break
@@ -76,6 +76,8 @@ class FaultRecoveryMCMC:
     def get_norm_dist(self, sensorID):
 
         dataSamples = utils.loadTrainingData(sensorID)
+        if not sensorID in dataSamples:
+            return None, None
         dataSampleItems = dataSamples[sensorID]
         originalValues = np.zeros((len(dataSampleItems), 2))
         i = 0

@@ -34,6 +34,9 @@ class FaultRecoveryBME:
             radius = 2000 # may depend on the use case/scenario
             label = get_observable_property_label(self.sensor.observesPropertyID())
             sensors = find_neighbor_sensors(self.sensor.ID(), label, lat, lng, radius)
+            if len(sensors) == 0:
+                print("no neighbours found")
+                return
             # print(sensors)
             trainingIDs = [sensorID] # IDs for which we need training data
             for s in sensors:
