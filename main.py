@@ -211,10 +211,10 @@ def callback_observation():
             print("IMPUTED ENTITY:", entity)
             continue
         streamObservationID = entity['id']
-        value = entity['http://www.w3.org/ns/sosa/hasSimpleResult']['value']
-        sensorID = sensorToObservationMap[streamObservationID].ID()
-        ObservationCache.update(sensorID, value)
         if streamObservationID in sensorToObservationMap:
+            value = entity['http://www.w3.org/ns/sosa/hasSimpleResult']['value']
+            sensorID = sensorToObservationMap[streamObservationID].ID()
+            ObservationCache.update(sensorID, value)
             threading.Thread(target=_call_FD_update, args=(streamObservationID, sensorID, value)).start()
 
     return Response('OK', status=200)
