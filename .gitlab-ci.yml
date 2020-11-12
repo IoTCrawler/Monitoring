@@ -39,7 +39,7 @@
 # `.buildpacks` that contains the URLs, one on each line, in order.
 # Note: Auto CI does not work with multiple buildpacks yet
 
-image: alpine:latest
+image: ubuntu:18.04
 
 variables:
   # KUBE_INGRESS_BASE_DOMAIN is the application deployment domain and should be set as a variable at the group or project level.
@@ -57,7 +57,7 @@ variables:
 
   DOCKER_TLS_CERTDIR: ""  # https://gitlab.com/gitlab-org/gitlab-runner/issues/4501
   AUTO_DEVOPS_POSTGRES_CHANNEL: 1
-  
+
   STAGING_ENABLED: 1
 stages:
   - build

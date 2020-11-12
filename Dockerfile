@@ -2,8 +2,8 @@ FROM ubuntu:18.04
 #FROM python:3
 
 RUN apt-get update
-#RUN apt-get install -y python3 python3-pip build-essential python3-dev octave octave-statistics r-base r-cran-randomfields
-RUN apt-get install -y --fix-missing python3 python3-pip octave octave-statistics r-base r-cran-randomfields
+RUN apt-get install -y python3 python3-pip build-essential python3-dev octave octave-statistics r-base r-cran-randomfields
+#RUN apt-get install -y --fix-missing python3 python3-pip octave octave-statistics r-base r-cran-randomfields
 #RUN apt-get install -y octave octave-statistics r-base r-cran-randomfields
 
 RUN mkdir /monitoring
