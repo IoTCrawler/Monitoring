@@ -6,12 +6,12 @@ service:
   internalPort: 8082
 
 livenessProbe:
-  path: "/"
-  initialDelaySeconds: 14
+  path: "/status"
+  initialDelaySeconds: 30
   timeoutSeconds: 14
   scheme: "HTTP"
 readinessProbe:
-  path: "/"
-  initialDelaySeconds: 4
-  timeoutSeconds: 2
+  path: "/status"
+  initialDelaySeconds: 30
+  timeoutSeconds: 14
   scheme: "HTTP"
