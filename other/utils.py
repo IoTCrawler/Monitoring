@@ -4,7 +4,7 @@ import dateutil
 import datetime
 import json
 
-IMPUTATION_PROPERTY_NAME = "http://www.fault-detection.de/hasImputedResult"
+IMPUTATION_PROPERTY_NAME = "http://www.fault-detection.de/hasEstimatedResult"
 SIMPLE_RESULT_PROPERTY_NAME = "http://www.w3.org/ns/sosa/hasSimpleResult"
 
 # needed? Monitoring is "controlled" by the MDR, not an API
