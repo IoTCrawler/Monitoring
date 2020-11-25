@@ -64,17 +64,17 @@ spec:
         env:
         volumeMounts:
         ports:
-        - name: "{{ .Values.pepproxy.service.name }}"
-          containerPort: {{ .Values.pepproxy.service.internalPort }}
+        - name: "{{ .Values.monitoring.service.name }}"
+          containerPort: {{ .Values.monitoring.service.internalPort }}
         livenessProbe:
 {{- if eq .Values.livenessProbe.probeType "httpGet" }}
           httpGet:
             path: {{ .Values.livenessProbe.path }}
             scheme: {{ .Values.livenessProbe.scheme }}
-            port: {{ .Values.pepproxy.service.internalPort }}
+            port: {{ .Values.monitoring.service.internalPort }}
 {{- else if eq .Values.livenessProbe.probeType "tcpSocket" }}
           tcpSocket:
-            port: {{ .Values.pepproxy.service.internalPort }}
+            port: {{ .Values.monitoring.service.internalPort }}
 {{- else if eq .Values.livenessProbe.probeType "exec" }}
           exec:
             command:
@@ -87,10 +87,10 @@ spec:
           httpGet:
             path: {{ .Values.readinessProbe.path }}
             scheme: {{ .Values.readinessProbe.scheme }}
-            port: {{ .Values.pepproxy.service.internalPort }}
+            port: {{ .Values.monitoring.service.internalPort }}
 {{- else if eq .Values.readinessProbe.probeType "tcpSocket" }}
           tcpSocket:
-            port: {{ .Values.pepproxy.service.internalPort }}
+            port: {{ .Values.monitoring.service.internalPort }}
 {{- else if eq .Values.readinessProbe.probeType "exec" }}
           exec:
             command:

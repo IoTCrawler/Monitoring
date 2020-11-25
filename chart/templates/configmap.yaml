@@ -27,11 +27,11 @@ data:
 
   NGSI_ADDRESS: "http://{{ .Values.monitoring.service.url_mdr }}:{{ .Values.monitoring.service.port_mdr }}"
   FD_HOST: "0.0.0.0"
-  FD_PORT: {{ .Values.monitoring.service.internalPort }}
+  FD_PORT: "{{ .Values.monitoring.service.internalPort }}"
   FD_CALLBACK: "http://{{ .Values.monitoring.service.url }}/faultdetection/callback"
   VS_CREATER_ADDRESS: "{{ .Values.monitoring.service.url_vs_creator }}"
-  #ENV RECOVERY_METHOD: "MCMC"
-  ENV RECOVERY_METHOD: "BME"
+  #RECOVERY_METHOD: "MCMC"
+  RECOVERY_METHOD: "BME"
 
   #Source OCB NGSIv2 - to create subscriptions
   #projectID: "IoTCrawler"  # This parameter is used to define the "description" key in the POST subscriptions request.
