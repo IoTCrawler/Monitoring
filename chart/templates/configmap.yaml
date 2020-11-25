@@ -26,7 +26,8 @@ data:
   BrokerLD_DataModel: "iotcrawler"
 
   NGSI_ADDRESS: "http://{{ .Values.monitoring.service.url_mdr }}:{{ .Values.monitoring.service.port_mdr }}"
-  FD_HOST: "0.0.0.0"
+  #FD_HOST: "0.0.0.0"
+  FD_HOST: "{{ .Values.monitoring.service.ur }}"
   FD_PORT: "{{ .Values.monitoring.service.internalPort }}"
   FD_CALLBACK: "http://{{ .Values.monitoring.service.url }}/faultdetection/callback"
   VS_CREATER_ADDRESS: "{{ .Values.monitoring.service.url_vs_creator }}"
