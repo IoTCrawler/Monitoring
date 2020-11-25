@@ -23,15 +23,15 @@ monitoring:
     externalPort: 8082
     internalPort: 8082
     production:
-      url: parking.monitoring.iotcrawler.eu
-      url_mdr: parking.mdr.iotcrawler.eu
+      url: monitoring.iotcrawler.eu
+      url_mdr: mdr.iotcrawler.eu
       port_mdr: 9090
-      url_vs_creator: http://parking.vs-creator.iotcrawler.eu
+      url_vs_creator: http://vs-creator.iotcrawler.eu
     staging:
-      url: staging.parking.monitoring.iotcrawler.eu
-      url_mdr: staging.parking.mdr.iotcrawler.eu
+      url: staging.monitoring.iotcrawler.eu
+      url_mdr: staging.mdr.iotcrawler.eu
       port_mdr: 9090
-      url_vs_creator: http://staging.parking.vs-creator.iotcrawler.eu
+      url_vs_creator: http://staging.vs-creator.iotcrawler.eu
   configmap: true
 podAnnotations: {}
 application:
