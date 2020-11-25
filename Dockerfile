@@ -43,4 +43,4 @@ EXPOSE $FD_PORT
 
 #ADD config.ini configuration.py datasource_manager.py main.py /
 
-#CMD python3 main.py
+CMD python3 main.py
