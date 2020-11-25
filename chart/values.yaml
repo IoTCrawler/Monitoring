@@ -12,7 +12,7 @@ monitoring:
     tag: latest
     pullPolicy: IfNotPresent
     secrets:
-    - name: gitlab-registry-monitoring-fault-detection
+    - name: gitlab-docker-registry
   service:
     enabled: true
     annotations: {}
