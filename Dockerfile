@@ -9,8 +9,8 @@ RUN apt-get update && DEBIAN_FRONTEND="noninteractive" apt-get install -y python
 RUN mkdir /monitoring
 WORKDIR /monitoring
 COPY requirements.txt /monitoring/requirements.txt
-RUN python3 -m pip install --upgrade pip
-RUN python3 -m pip install -r /monitoring/requirements.txt
+RUN python3 -m pip install --upgrade pip && python3 -m pip install -r /monitoring/requirements.txt
+#RUN python3 -m pip install -r /monitoring/requirements.txt
 
 RUN R -e "install.packages('geoR')"
 
