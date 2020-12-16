@@ -4,7 +4,8 @@ import dateutil
 import datetime
 import json
 
-IMPUTATION_PROPERTY_NAME = "http://www.fault-detection.de/hasImputedResult"
+IMPUTATION_PROPERTY_NAME = "http://www.fault-detection.de/hasEstimatedResult"
+VERDICT_PROPERTY_NAME = "http://www.fault-detection.de/hasVerdict"
 SIMPLE_RESULT_PROPERTY_NAME = "http://www.w3.org/ns/sosa/hasSimpleResult"
 
 # needed? Monitoring is "controlled" by the MDR, not an API
@@ -140,3 +141,16 @@ def makeStreamObservation(sensor, value):
 #     """ % (sensor.streamObservationID(), sensor.getStreamID(), _makeResultProperty(value, dt_iso, True), sensor.ID(), sensor.observesPropertyID(), dt_iso)
     ngsi_msg = _makeResultProperty(value, dt_iso, True)
     return json.loads(ngsi_msg)
+
+def makeFDVerdict(verdict="ok"):
+    template = """{"%s" : {
+      "type" : "Property",
+      "value": "%s"
+    },
+    "@context": [
+        "http://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"
+    ] }"""
+    # } """
+
+    # resultType = IMPUTATION_PROPERTY_NAME if isImputed else "http://www.w3.org/ns/sosa/hasSimpleResult"
+    return template % (VERDICT_PROPERTY_NAME, verdict)

@@ -5,7 +5,7 @@ import uuid
 import threading
 import sys
 
-from flask import Flask, redirect, render_template, url_for, request, Blueprint, flash, Response
+from flask import Flask, redirect, render_template, send_file, url_for, request, Blueprint, flash, Response
 
 import ngsi_ld.ngsi_parser
 from configuration import Config
@@ -341,6 +341,25 @@ def status2():
 @bp.route('/status', methods=['GET'])
 def status():
     return "running"
+
+@bp.route('/log.txt', methods=['GET'])
+def log_download():
+    try:
+        return send_file('monitoring.log', attachment_filename='monitoring.log')
+    except Exception as e:
+        return str(e)
+
+@bp.route('/log', methods=['GET'])
+def log():
+    try:
+        with open('monitoring.log') as lFile:
+            reply = "<html><body>"
+            for line in lFile:
+                reply += line + "<br>"
+            reply += "</body></html>"
+            return reply
+    except Exception as e:
+        return str(e)
 
 
 app = Flask(__name__)

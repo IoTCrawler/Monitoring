@@ -1,0 +1,27 @@
+{{ if .Values.monitoring.service.enabled}}
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: "Monitoring"
+    track: "{{ .Values.application.track }}"
+    tier: "{{ .Values.application.tier }}"
+    release: {{ .Release.Name }}
+    service: {{ .Values.monitoring.service.name }}
+  name: {{ .Values.monitoring.service.name }}
+spec:
+  type: {{ .Values.monitoring.service.type }}
+  ports:
+  - port: {{ .Values.monitoring.service.externalPort }}
+    targetPort: {{ .Values.monitoring.service.internalPort }}
+    protocol: TCP
+    name: {{ .Values.monitoring.service.name }}
+  selector:
+    app: {{ template "appname" . }}
+    track: "{{ .Values.application.track }}"
+    tier: "{{ .Values.application.tier }}"
+    release: {{ .Release.Name }}
+    service: {{ .Values.monitoring.service.name }}
+status:
+  loadBalancer: {}
+{{end}}
