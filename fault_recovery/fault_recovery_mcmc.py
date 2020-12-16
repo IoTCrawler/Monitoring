@@ -28,7 +28,7 @@ class FaultRecoveryMCMC:
         # return timestamp.day * 1440 + timestamp.hour * 60 + timestamp.minute
 
     def newSensor(self, sensorID, entity):
-        print("FR newSensor called")
+        # print("FR newSensor called")
         muValue, sigmaValue, genNumber = self.get_norm_dist(sensorID)
         if not muValue:
             # no training data
@@ -49,42 +49,42 @@ class FaultRecoveryMCMC:
         fname = pm.save_trace(trace, 'LearningOutput' + str(sensorID) + '.trace', overwrite=True)
         traceArray = trace['out']
         final = []
-        print("lta:", len(traceArray))
+        # print("lta:", len(traceArray))
         # for i in range(self.burninTime):
         for i in range(genNumber):
             final.append(traceArray[i])
         finalArray = np.asarray(final)
-        print("N:", len(finalArray))
+        # print("N:", len(finalArray))
         pickle_out = open(self.makeModelFilename("modelout_" + sensorID + ".pickle"), "wb")
         pickle.dump(finalArray, pickle_out)
         pickle_out.close()
         return
 
     def update(self, sensorID, value):
-        print("FR update callled")
+        # print("FR update callled")
         # timeStamp = dparser.parse(str(value), fuzzy=True).timestamp() % 10000
         timeStamp = np.float64(self.minutesSinceMidnight(dparser.parse(str(value), fuzzy=True)))
-        print("current ts:", timeStamp)
+        # print("current ts:", timeStamp)
         missingValuePosition = 4
         # pickle_in_data = open("models/modelout.pickle", "rb")
         pickle_in_data = open(self.makeModelFilename("modelout_" + sensorID + ".pickle"), "rb")
         pickle_in_time = open(self.makeModelFilename("timestamps_" + sensorID + ".pickle"), "rb")
         # myinputTime = pickle.load(pickle_in_time) % 10000  # extract the time
         myinputTime = pickle.load(pickle_in_time)
-        print("U1:", len(myinputTime), myinputTime)
+        # print("U1:", len(myinputTime), myinputTime)
         myinput = pickle.load(pickle_in_data)
         for i in range(len(myinputTime)):
             if (myinputTime[i] == timeStamp):
                 missingValuePosition = i
-                print("U3: found timestamp")
+                # print("U3: found timestamp")
                 break
-        print("U2:", missingValuePosition, myinput[abs(missingValuePosition - self.windows): abs(missingValuePosition + self.windows)], abs(missingValuePosition - self.windows), abs(missingValuePosition + self.windows), len(myinput))
+        # print("U2:", missingValuePosition, myinput[abs(missingValuePosition - self.windows): abs(missingValuePosition + self.windows)], abs(missingValuePosition - self.windows), abs(missingValuePosition + self.windows), len(myinput))
         # TODO: test if myinput is long enough
         imputedValue = int(
             np.mean(myinput[abs(missingValuePosition - self.windows): abs(missingValuePosition + self.windows)]))
         pickle_in_time.close()
         pickle_in_data.close()
-        print("predicted value:", imputedValue)
+        # print("predicted value:", imputedValue)
         return imputedValue
 
     def get_norm_dist(self, sensorID):
@@ -105,10 +105,10 @@ class FaultRecoveryMCMC:
 
         ind = np.argsort(originalValues[:, 1])
         originalValuesSorted = originalValues[ind]
-        print(originalValuesSorted)
-        print("T1:", originalValuesSorted[:, 1], len(originalValuesSorted[:, 1]))
+        # print(originalValuesSorted)
+        # print("T1:", originalValuesSorted[:, 1], len(originalValuesSorted[:, 1]))
         uniqueValues = np.unique(originalValuesSorted[:, 1])
-        print("T2:", uniqueValues, len(uniqueValues))
+        # print("T2:", uniqueValues, len(uniqueValues))
         timestamp_filename = self.makeModelFilename("timestamps_" + sensorID + ".pickle")
         # pickle_out = open("timestamps.pickle", "wb")
         pickle_out = open(timestamp_filename, "wb")
