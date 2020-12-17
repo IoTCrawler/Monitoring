@@ -12,7 +12,7 @@ monitoring:
     tag: latest
     pullPolicy: Always
     secrets:
-    - name: gitlab-docker-registry
+    - name: gitlab-registry-monitoring-fault-detection
   service:
     enabled: true
     annotations: {}
