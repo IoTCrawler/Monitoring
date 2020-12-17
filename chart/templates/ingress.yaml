@@ -9,6 +9,7 @@ metadata:
     service: {{ .Values.monitoring.service.name }}
   annotations:
     kubernetes.io/ingress.class: nginx
+    kubernetes.io/tls-acme: "true"
   name: {{ .Values.monitoring.service.name }}
 spec:
   tls:
