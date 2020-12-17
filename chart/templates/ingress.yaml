@@ -1,0 +1,35 @@
+{{ if .Values.ingress.enabled }}
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  labels:
+    app: {{ template "name" . }}
+    track: "{{ .Values.application.track }}"
+    tier: "{{ .Values.application.tier }}"
+    release: {{ .Release.Name }}
+    service: {{ .Values.monitoring.service.name }}
+  annotations:
+    kubernetes.io/ingress.class: nginx
+  name: {{ .Values.monitoring.service.name }}
+spec:
+  tls:
+  - hosts:
+    {{ if eq .Release.Name "staging" }}
+    - {{ .Values.monitoring.service.staging.url }}
+    {{ else }}
+    - {{ .Values.monitoring.service.production.url }}
+    {{ end }}
+    secretName: {{ .Values.ingress.tls.secretName }}
+  rules:
+  {{ if eq .Release.Name "staging" }}
+  - host: {{ .Values.monitoring.service.staging.url }}
+    {{ else }}
+  - host: {{ .Values.monitoring.service.production.url }}
+  {{ end }}
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: {{ .Values.monitoring.service.name }}
+          servicePort: {{ .Values.monitoring.service.internalPort }}
+{{end}}

@@ -1,0 +1,15 @@
+{{- if .Values.monitoring.service.enabled -}}
+Application should be accessible at
+    {{ if eq .Release.Name  "staging" }}
+      {{ .Values.monitoring.service.staging.url }}
+    {{else}}
+      {{ .Values.monitoring.service.production.url }}
+    {{end}}
+{{- else -}}
+Application was deployed reusing the service at
+
+    {{ .Values.monitoring.service.url }}
+
+It will share a load balancer with the previous release (or be unavailable if
+no service was previously deployed).
+{{- end -}}
