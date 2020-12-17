@@ -25,7 +25,7 @@ data:
   #"wrapper": Only use a wrapper to obtain the NGSILD entity.
   BrokerLD_DataModel: "iotcrawler"
 
-  NGSI_ADDRESS: "{{ .Values.monitoring.service.ngsi_address }}"
+  NGSI_ADDRESS: {{ if eq .Release.Name "staging" }} "{{ .Values.monitoring.service.staging.ngsi_address }}" {{ else }} "{{ .Values.monitoring.service.production.ngsi_address }}" {{ end }}
   #FD_HOST: "0.0.0.0"
   FD_HOST: "{{ .Values.monitoring.service.url }}"
   FD_PORT: "{{ .Values.monitoring.service.internalPort }}"
