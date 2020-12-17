@@ -18,7 +18,7 @@ spec:
     {{ else }}
     - {{ .Values.monitoring.service.production.url }}
     {{ end }}
-    secretName: {{ .Values.ingress.tls.secretName }}
+    secretName: monitoring-{{.Release.Name}}-tls
   rules:
   {{ if eq .Release.Name "staging" }}
   - host: {{ .Values.monitoring.service.staging.url }}
