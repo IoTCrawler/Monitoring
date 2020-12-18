@@ -1,6 +1,9 @@
 import configparser
 import os
+import sys
 
+def eprint(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
 
 class Config:
     """Interact with configuration variables."""
@@ -56,7 +59,7 @@ class Config:
     @classmethod
     def showEnvironmentVariables(cls):
         for key in os.environ:
-            print("ENV:", key, "=", os.environ[key])
+            eprint("ENV:", key, "=", os.environ[key])
 
 
 if __name__ == "__main__":
