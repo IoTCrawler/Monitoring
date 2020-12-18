@@ -6,13 +6,13 @@ strategyType:
 enableSelector:
 deploymentApiVersion: apps/v1
 monitoring:
-  name: monitor
+  name: Monitor
   image:
     repository: gitlab.iotcrawler.net:4567/monitoring/fault_detection/master
     tag: latest
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
     secrets:
-    - name: gitlab-registry-monitoring-fault-detection
+    - name: gitlab-docker-registry
   service:
     enabled: true
     annotations: {}
@@ -23,16 +23,16 @@ monitoring:
     externalPort: 8082
     internalPort: 8082
     production:
-      url: parking.monitoring.iotcrawler.eu
+      url: monitoring.iotcrawler.eu
       url_mdr: mdr.iotcrawler.eu
       port_mdr: 9090
-      ngsi_address: http://parking.monitoring.iotcrawler.eu
+      ngsi_address: http://monitoring.iotcrawler.eu
       url_vs_creator: http://vs-creator.iotcrawler.eu
     staging:
-      url: staging.parking.monitoring.iotcrawler.eu
+      url: staging.monitoring.iotcrawler.eu
       url_mdr: staging.mdr.iotcrawler.eu
       port_mdr: 9090
-      ngsi_address: http://staging.parking.monitoring.iotcrawler.eu
+      ngsi_address: http://staging.monitoring.iotcrawler.eu
       url_vs_creator: http://staging.vs-creator.iotcrawler.eu
   configmap: true
 podAnnotations: {}
