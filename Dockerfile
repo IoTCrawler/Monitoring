@@ -38,6 +38,7 @@ ENV FD_CALLBACK https://mobcom.ecs.hs-osnabrueck.de/faultdetection/callback
 ENV VS_CREATER_ADDRESS http://staging.vs-creator.iotcrawler.eu
 #ENV RECOVERY_METHOD MCMC
 ENV RECOVERY_METHOD BME
+ENV DUMMY Hallo
 
 EXPOSE $FD_PORT
 
