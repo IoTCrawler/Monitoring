@@ -53,6 +53,11 @@ class Config:
         except KeyError:
             return default
 
+    @classmethod
+    def showEnvironmentVariables(cls):
+        for key in os.environ:
+            print("ENV:", key, "=", os.environ[key])
+
 
 if __name__ == "__main__":
     print(Config.get('NGSI', 'host'))

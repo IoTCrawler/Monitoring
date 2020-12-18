@@ -24,6 +24,9 @@ from ngsi_ld.broker_interface import find_neighbor_sensors, get_observable_prope
 from fault_recovery.fault_recovery import FaultRecovery
 from fault_detection.FaultDetection import FaultDetection
 
+# print the current environment variables
+Config.showEnvironmentVariables()
+
 # Configure logging
 logger = logging.getLogger('monitoring')
 logger.setLevel(logging.DEBUG)
@@ -437,6 +440,10 @@ if __name__ == "__main__":
 #     sys.exit(0)
 
     # real code starting here
-    datasourceManager.initialise(datasourceManagerInitialised)
+    try:
+        datasourceManager.initialise(datasourceManagerInitialised)
+    except Exception as e:
+        print("Error initialising datasource manager", e)
+
     app.run(host=Config.getEnvironmentVariable('FD_HOST'), port=int(Config.getEnvironmentVariable('FD_PORT')), debug=False)
     datasourceManager.del_all_subscriptions()

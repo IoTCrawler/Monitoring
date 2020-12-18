@@ -7,7 +7,6 @@
     }
   ],
   "notification": {
-    "attributes": [],
     "format": "keyValues",
     "endpoint": {
       "uri": "{{notif-endpoint}}",
