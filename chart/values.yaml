@@ -26,13 +26,13 @@ monitoring:
       url: monitoring.iotcrawler.eu
       url_mdr: mdr.iotcrawler.eu
       port_mdr: 9090
-      ngsi_address: http://monitoring.iotcrawler.eu
+      ngsi_address: http://mdr.iotcrawler.eu
       url_vs_creator: http://vs-creator.iotcrawler.eu
     staging:
       url: staging.monitoring.iotcrawler.eu
       url_mdr: staging.mdr.iotcrawler.eu
       port_mdr: 9090
-      ngsi_address: http://staging.monitoring.iotcrawler.eu
+      ngsi_address: http://staging.mdr.iotcrawler.eu
       url_vs_creator: http://staging.vs-creator.iotcrawler.eu
   configmap: true
 podAnnotations: {}
