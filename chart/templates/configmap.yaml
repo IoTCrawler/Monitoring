@@ -8,38 +8,11 @@ metadata:
     release: {{ .Release.Name }}
   name: {{.Release.Name}}-monitoring
 data:
-  #Source OCB NGSIv2
-  #ocb_ip: "<specify Orion Context Broker Public IP address>"
-  #ocb_port: "<specify Orion Context Broker Port>"
-  #ocb_service: "<specify Orion Context Broker Service>"
-  #ocb_servicePath: "<specify Orion Context Broker Service Path>"
-
-  #Destination NGSILD Broker
-  #Admitted values to BrokerLD_type (SCORPIO; DJANE --> No supported.)
-  #BrokerLD_type: "SCORPIO"       #ONLY SCORPIO supported
-  #BrokerLD_protocol: "http"      #Default http.
-  #BrokerLD_ip: "<specify Broker NGSI-LD Public IP address>"
-  #BrokerLD_port: "<specify Broker NGSI-LD Port>"
-  #BrokerLD_DataModel admitable values:
-  #"iotcrawler": generate the next entiy types --> ObservableProperty, Point, Sensor, Observation. By default.
-  #"wrapper": Only use a wrapper to obtain the NGSILD entity.
-  BrokerLD_DataModel: "iotcrawler"
-
   NGSI_ADDRESS: {{ if eq .Release.Name "staging" }} "{{ .Values.monitoring.service.staging.ngsi_address }}" {{ else }} "{{ .Values.monitoring.service.production.ngsi_address }}" {{ end }}
   #FD_HOST: "0.0.0.0"
-  FD_HOST: "{{ .Values.monitoring.service.url }}"
+  FD_HOST: {{ if eq .Release.Name "staging" }} "{{ .Values.monitoring.service.staging.url }}" {{ else }} "{{ .Values.monitoring.service.production.url }}" {{ end }}
   FD_PORT: "{{ .Values.monitoring.service.internalPort }}"
-  FD_CALLBACK: "http://{{ .Values.monitoring.service.url }}/faultdetection/callback"
-  VS_CREATER_ADDRESS: "{{ .Values.monitoring.service.url_vs_creator }}"
+  FD_CALLBACK: "http://{{ if eq .Release.Name "staging" }} {{ .Values.monitoring.service.staging.url }} {{ else }} {{ .Values.monitoring.service.production.url }} {{ end }}/faultdetection/callback"
+  VS_CREATER_ADDRESS: {{ if eq .Release.Name "staging" }} "{{ .Values.monitoring.service.staging.url_vs_creator }}" {{ else }} "{{ .Values.monitoring.service.production.url_vs_creator }}" {{ end }}
   #RECOVERY_METHOD: "MCMC"
   RECOVERY_METHOD: "BME"
-
-  #Source OCB NGSIv2 - to create subscriptions
-  #projectID: "IoTCrawler"  # This parameter is used to define the "description" key in the POST subscriptions request.
-  #notify_protocol: "http"     # protocol where connector is running. Default http."
-  #notify_ip: "<specify connector Public IP address>"        # HOST where connector is running.
-  #notify_port: "<specify connector Public Port>" # Must be coordinated with mimurciaparking/ports service
-  #notify_resetSubscriptions: "1" # 0 - No; 1 - Yes (recreate susbcriptions from OCB with the same endpoint)"
-
-  # Optional internal parameter
-  frecuency_mseg: "86400000"
