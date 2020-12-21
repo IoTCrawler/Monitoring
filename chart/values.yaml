@@ -10,9 +10,9 @@ monitoring:
   image:
     repository: gitlab.iotcrawler.net:4567/monitoring/fault_detection/master
     tag: latest
-    pullPolicy: IfNotPresent
+    pullPolicy: Always
     secrets:
-    - name: gitlab-docker-registry
+    - name: gitlab-registry-monitoring-fault-detection
   service:
     enabled: true
     annotations: {}
@@ -26,14 +26,14 @@ monitoring:
       url: monitoring.iotcrawler.eu
       url_mdr: mdr.iotcrawler.eu
       port_mdr: 9090
-      ngsi_address: http://mdr.iotcrawler.eu
-      url_vs_creator: http://vs-creator.iotcrawler.eu
+      ngsi_address: https://mdr.iotcrawler.eu
+      url_vs_creator: https://vs-creator.iotcrawler.eu
     staging:
       url: staging.monitoring.iotcrawler.eu
       url_mdr: staging.mdr.iotcrawler.eu
       port_mdr: 9090
-      ngsi_address: http://staging.mdr.iotcrawler.eu
-      url_vs_creator: http://staging.vs-creator.iotcrawler.eu
+      ngsi_address: https://staging.mdr.iotcrawler.eu
+      url_vs_creator: https://staging.vs-creator.iotcrawler.eu
   configmap: true
 podAnnotations: {}
 application:
