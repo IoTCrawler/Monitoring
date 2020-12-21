@@ -334,15 +334,14 @@ def _call_FD_missingValue(qualityID, sensorID, freq):
         # call VS creater to delete
         stopVirtualSensor(sensorID)
 
-# TODO: remove this blueprint???
-@bp2.route('/', methods=['GET'])
-def status2():
-    return "running"
-    # return redirect(url_for('semanticenrichment.index'))
-
 
 @bp.route('/status', methods=['GET'])
 def status():
+    return "running"
+
+# TODO: remove this blueprint???
+@bp2.route('/', methods=['GET'])
+def status2():
     return "running"
 
 @bp.route('/log.txt', methods=['GET'])
