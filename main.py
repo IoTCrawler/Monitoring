@@ -440,7 +440,8 @@ if __name__ == "__main__":
 
     # real code starting here
     try:
-        datasourceManager.initialise(datasourceManagerInitialised)
+        # datasourceManager.initialise(datasourceManagerInitialised)
+        threading.Thread(target=datasourceManager.initialise, args=(datasourceManagerInitialised,)).start()
     except Exception as e:
         print("Error initialising datasource manager", e)
 
