@@ -41,13 +41,12 @@ class Config:
 
     @classmethod
     def getEnvironmentVariables(cls):
-
-        # print(os.environ['NGSI_HOST'])
-        envMap = {}
-        env = ['NGSI_ADDRESS', 'SE_HOST', 'SE_PORT', 'SE_CALLBACK']
-        for v in env:
-            envMap[v] = Config.getEnvironmentVariable(v)
-        return envMap
+        # envMap = {}
+        # env = ['NGSI_ADDRESS', 'SE_HOST', 'SE_PORT', 'SE_CALLBACK']
+        # for v in env:
+        #     envMap[v] = Config.getEnvironmentVariable(v)
+        # return envMap
+        return os.environ
 
     @classmethod
     def getEnvironmentVariable(cls, variable, default=None):
@@ -60,6 +59,10 @@ class Config:
     def showEnvironmentVariables(cls):
         for key in os.environ:
             eprint("ENV:", key, "=", os.environ[key])
+
+    @classmethod
+    def setEnvironmentVariable(cls, variable, newValue):
+        os.environ[variable] = newValue
 
 
 if __name__ == "__main__":

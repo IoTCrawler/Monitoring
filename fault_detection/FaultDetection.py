@@ -8,17 +8,6 @@ from ngsi_ld.ngsi_parser import NGSI_Type
 from fault_detection.detector import Detector
 from other import utils
 
-# REGISTRATION_CONTENT_TYPE = {'content-type': 'application/json'}
-# REGISTRATION_FIWARE_SERVICE = {'fiware-service': 'openiot'}
-# REGISTRATION_FIWARE_SERVICEPATH = {'fiware-servicepath': '/'}
-
-# headers = {}
-# headers.update({'content-type': 'application/ld+json'})
-# headers.update({'accept': 'application/json'})
-
-# SEND_LOCAL = True
-# broker = os.environ['NGSI_ADDRESS']# = '155.54.95.2488:9090' #pass in class?
-
 class FaultDetection:
 
     def __init__(self):
@@ -34,42 +23,6 @@ class FaultDetection:
         #self.no_of_misses = {}
         #self.updateIntervals = {}
 
-#     def patch_ngsi_entity(ngsi_msg, broker):
-#     # for updating entity we have to delete id and type, first do copy if needed somewhere else
-#         ngsi_msg_patch = dict(ngsi_msg)
-#         ngsi_msg_patch.pop('id')
-#         ngsi_msg_patch.pop('type')
-#         url = "http://" + broker + "/ngsi-ld/v1/entities/" + ngsi_msg['id'] + "/attrs/"
-#         r = requests.patch(url, json=ngsi_msg_patch, headers=headers)
-#         print("Patch response:", r.text, "code", r.status_code)
-#         if r.status_code == 204:
-#             print("Successful patch " + ngsi_msg['id'])
-
-
-#     def create_ngsi_entity(self,ngsi_msg):
-#         t = threading.Thread(target=self._create_ngsi_entity, args=(ngsi_msg,))
-#         t.start()
-
-#     def _create_ngsi_entity(self, ngsi_msg):
-# #        for broker in BROKERS:
-#         print("save message to ngsi broker:", ngsi_msg)
-#         try:
-#             url = "http://" + broker + "/ngsi-ld/v1/entities/"
-#             r = requests.post(url, json=ngsi_msg, headers=headers)
-#             if r.status_code == 201:
-#                 print("Successful creation of " + ngsi_msg['id'])
-#             elif r.status_code == 400:
-#                 print("Bad Request creating entity ", ngsi_msg['id'], r.text)
-#             elif r.status_code == 409:
-#                 print("Already Exists (", ngsi_msg['id'], "), patch it")
-#                 self.patch_ngsi_entity(ngsi_msg, broker)
-#             elif r.status_code == 500:
-#                 print("Error while creating ngsi entity", r.text)
-#                 print("Broker", broker, "Entity", ngsi_msg)
-#             else:
-#                 print("Answer:", r.text)
-#         except requests.exceptions.ConnectionError:
-#             print("server not reachable?")
 
 
     def newSensor(self, entity):

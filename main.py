@@ -363,6 +363,21 @@ def log():
     except Exception as e:
         return str(e)
 
+@bp.route('/setenv', methods=['GET'])
+def setenv():
+    variable = request.args.get('var')
+    value = request.args.get('val')
+    Config.setEnvironmentVariable(variable, value)
+    return "set"
+
+@bp.route('/showenv', methods=['GET'])
+def showenv():
+    vars = Config.getEnvironmentVariables()
+    reply = "<html><body><table>"
+    for v in vars:
+        reply += "<tr><td>"+v+"</td><td>"+vars[v]+"</td></tr>"
+    reply += "</table></body></html>"
+    return reply
 
 app = Flask(__name__)
 app.secret_key = 'e3645c25b6d5bf67ae6da68c824e43b530e0cb43b0b9432c'
