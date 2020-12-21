@@ -6,7 +6,7 @@ strategyType:
 enableSelector:
 deploymentApiVersion: apps/v1
 monitoring:
-  name: Monitor
+  name: Monitoring
   image:
     repository: gitlab.iotcrawler.net:4567/monitoring/fault_detection/master
     tag: latest
