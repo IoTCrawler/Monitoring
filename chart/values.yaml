@@ -10,7 +10,7 @@ monitoring:
   image:
     repository: gitlab.iotcrawler.net:4567/monitoring/fault_detection/master
     tag: latest
-    pullPolicy: Always
+    pullPolicy: IfNotPresent
     secrets:
     - name: gitlab-docker-registry
   service:
