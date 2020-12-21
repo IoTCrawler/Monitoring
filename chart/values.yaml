@@ -54,7 +54,7 @@ gitlab:
   envName:
   envURL:
 ingress:
-  enabled: false
+  enabled: true
   url:
   tls:
     enabled: true
