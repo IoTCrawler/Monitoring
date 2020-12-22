@@ -381,7 +381,17 @@ def showenv():
 
 @bp.route('/reinit', methods=['GET'])
 def reinit():
-    threading.Thread(target=datasourceManager.initialise, args=(datasourceManagerInitialised,)).start()
+    # all training will have to be done again, but since we don't know why
+    # reinit was called its the best we can do.
+    faultDetection = FaultDetection()
+    faultRecovery = FaultRecovery()
+    sensorsMap = {}
+    sensorToObservationMap = {}
+    streamToSensorMap = {}
+    qualityToStreamMap = {}
+
+    imputedStreamObservationIDs = [] # list of observation IDs with IMPUTATION_PROPERTY_NAME attributes
+    threading.Thread(target=datasourceManager.reinitialise, args=(datasourceManagerInitialised,)).start()
     return "initialising started. This may take a moment."
 
 app = Flask(__name__)
