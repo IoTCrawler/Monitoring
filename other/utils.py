@@ -100,13 +100,17 @@ def _makeResultProperty(value, observedAt, isImputed=False):
       """ + valueTemplates[vTemplate] + """,
       "observedAt" : "%s"
     },
+    {"%s" : {
+      "type" : "Property",
+      "value": "faulty"
+    },
     "@context": [
         "http://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"
     ] }"""
     # } """
 
     resultType = IMPUTATION_PROPERTY_NAME if isImputed else "http://www.w3.org/ns/sosa/hasSimpleResult"
-    return template % (resultType, value, observedAt)
+    return template % (resultType, value, observedAt, VERDICT_PROPERTY_NAME)
 
 def makeStreamObservation(sensor, value):
 
