@@ -40,6 +40,15 @@ class DatasourceManager:
             logger.debug("Initialise entity " + ngsi_parser.get_id(entity))
             self.update(entity)
 
+    def reinitialise(self, finishCallback=None):
+        self.del_all_FD_subscriptions()
+        self.subscriptions = {}
+        self.streams = {}
+        self.sensors = {}
+        self.observations = {}
+        self.observableproperties = {}
+        self.initialise(finishCallback)
+
     def update(self, ngsi_data, sendIt=False):
         ngsi_id, ngsi_type = ngsi_parser.get_IDandType(ngsi_data)
         # check type

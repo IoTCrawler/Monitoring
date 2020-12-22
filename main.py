@@ -379,6 +379,11 @@ def showenv():
     reply += "</table></body></html>"
     return reply
 
+@bp.route('/reinit', methods=['GET'])
+def reinit():
+    threading.Thread(target=datasourceManager.initialise, args=(datasourceManagerInitialised,)).start()
+    return "initialising started. This may take a moment."
+
 app = Flask(__name__)
 app.secret_key = 'e3645c25b6d5bf67ae6da68c824e43b530e0cb43b0b9432c'
 app.register_blueprint(bp, url_prefix='/monitoring')
