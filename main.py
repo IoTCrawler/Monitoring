@@ -12,7 +12,7 @@ from configuration import Config
 from ngsi_ld.ngsi_parser import NGSI_Type, resolve_prefixes
 from other.exceptions import BrokerError
 from other.logging import DequeLoggerHandler
-from other.utils import makeStreamObservation, ObservationCache, IMPUTATION_PROPERTY_NAME, SIMPLE_RESULT_PROPERTY_NAME
+from other.utils import makeStreamObservation, ObservationCache, IMPUTATION_PROPERTY_NAME, SIMPLE_RESULT_PROPERTY_NAME, VERDICT_PROPERTY_NAME
 from other.vs_creater_interface import replaceBrokenSensor, stopVirtualSensor
 from sensor import Sensor
 from datasource_manager import DatasourceManager
@@ -241,6 +241,12 @@ def _call_FD_update(streamObservationID, sensorID, value):
     elif streamObservationID in imputedStreamObservationIDs:
         # sensor provide a new and valid observation, remove the imputed one
         datasourceManager.remove_attr(streamObservationID, IMPUTATION_PROPERTY_NAME)
+        datasourceManager.remove_attr(streamObservationID, VERDICT_PROPERTY_NAME)
+        imputedStreamObservationIDs.remove(streamObservationID)
+    else: # value was not faulty
+        #TODO: is this what is agreed upon?
+        datasourceManager.remove_attr(streamObservationID, IMPUTATION_PROPERTY_NAME)
+        datasourceManager.remove_attr(streamObservationID, VERDICT_PROPERTY_NAME)
         imputedStreamObservationIDs.remove(streamObservationID)
 
     if createOrDeleteVS == 2:
@@ -328,6 +334,12 @@ def _call_FD_missingValue(qualityID, sensorID, freq):
                                                                       # so this should never be true, but in case Monitoring missed it.
         # sensor provide a new and valid observation, remove the imputed one
         datasourceManager.remove_attr(sensor.streamObservationID(), IMPUTATION_PROPERTY_NAME)
+        datasourceManager.remove_attr(sensor.streamObservationID(), VERDICT_PROPERTY_NAME)
+        imputedStreamObservationIDs.remove(sensor.streamObservationID())
+    else: # value was not missing
+        #TODO: is this what is agreed upon?
+        datasourceManager.remove_attr(streamObservationID, IMPUTATION_PROPERTY_NAME)
+        datasourceManager.remove_attr(streamObservationID, VERDICT_PROPERTY_NAME)
         imputedStreamObservationIDs.remove(sensor.streamObservationID())
 
     if createOrDeleteVS == 2:
