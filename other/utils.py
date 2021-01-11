@@ -4,7 +4,7 @@ import dateutil
 import datetime
 import json
 
-IMPUTATION_PROPERTY_NAME = "http://www.fault-detection.de/hasEstimatedResult"
+IMPUTATION_PROPERTY_NAME = "http://www.fault-detection.de/hasEstimatedResult" # TODO: Change to new address
 VERDICT_PROPERTY_NAME = "http://www.fault-detection.de/hasVerdict"
 SIMPLE_RESULT_PROPERTY_NAME = "http://www.w3.org/ns/sosa/hasSimpleResult"
 
