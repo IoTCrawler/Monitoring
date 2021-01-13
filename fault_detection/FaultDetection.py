@@ -1,12 +1,14 @@
 # import os
 import threading
 import requests
-
+import logging
 
 from ngsi_ld import ngsi_parser
 from ngsi_ld.ngsi_parser import NGSI_Type
 from fault_detection.detector import Detector
 from other import utils
+
+logger = logging.getLogger('monitoring')
 
 class FaultDetection:
 
@@ -26,7 +28,7 @@ class FaultDetection:
 
 
     def newSensor(self, entity):
-        print("FD newSensor called")
+        logger.debug("FD newSensor called")
         # ngsi_id, ngsi_type = ngsi_parser.get_IDandType(ngsi_data)
         # # check type
         # if ngsi_type is NGSI_Type.Sensor:# or NGSI_Type.NGSI_Type.Sensor:StreamObservation:
@@ -51,13 +53,13 @@ class FaultDetection:
         #timeInterval, unit = ngsi_parser.get_sensor_updateinterval_and_unit(entity)
         #todo: if sensor has no training data, store values and create data
         if ngsi_id in result:
-            print("FD - train for", ngsi_id)
+            logger.debug("FD - train for", ngsi_id)
             self.detectors[ngsi_id] = Detector()
             self.detectors[ngsi_id].get_data(result[ngsi_id])
             self.detectors[ngsi_id].train()
-            print("FD - training of", ngsi_id, "finished")
+            logger.debug("FD - training of " + ngsi_id + " finished")
         else:
-            print("no training data for", ngsi_id, "found")
+            logger.debug("no training data for " + ngsi_id + " found")
 
     #return 1 for create VS, 0 for dont
     def callVS(self, sensorID):

@@ -69,90 +69,16 @@ def format_datetime(value):
     return None
 
 
+#not used at the moment
 @bp.route('/')
 @bp.route('/index')
 def index():
     return render_template("index.html")
 
 
-# @bp.route('/showsubscriptions', methods=['GET', 'POST'])
-# def showsubscriptions():
-#     subscriptions = datasourceManager.get_subscriptions()
-#     return render_template('subscriptions.html', subscriptions=subscriptions.values(), id=str(uuid.uuid4()),
-#                            endpoint=Config.getEnvironmentVariable('FD_CALLBACK'))
-
-
-# @bp.route('/log', methods=['GET'])
-# def showlog():
-#     return render_template('log.html', logmessages=deque_handler.get_entries(),
-#                            maxentries=int(Config.get('logging', 'maxlogentries')))
-
 @bp.route('/running', methods=['GET'])
 def showrunning():
     return "running"
-
-
-# @bp.route('/addsubscription', methods=['POST'])
-# def addsubscription():
-#     subscription = request.form.get('subscription')
-#     try:
-#         datasourceManager.add_subscription(json.loads(subscription))
-#     except BrokerError as e:
-#         flash('Error while adding subscription:' + str(e))
-#     return redirect(url_for('.showsubscriptions'))
-#
-#
-# @bp.route('/getsubscriptions', methods=['POST'])
-# def getsubscriptions():
-#     datasourceManager.get_active_subscriptions()
-#     return redirect(url_for('.showsubscriptions'))
-#
-#
-# @bp.route('/deleteallsubscriptions', methods=['POST'])
-# def deleteallsubscriptions():
-#     datasourceManager.del_all_subscriptions()
-#     return redirect(url_for('.showsubscriptions'))
-#
-#
-# @bp.route('/deletesubscription', methods=['POST'])
-# def deletesubscription():
-#     subid = request.form.get('subid')
-#     if subid is not None:
-#         logger.info("Delete subscription: " + subid)
-#         datasourceManager.del_subscription(subid)
-#     return redirect(url_for('.showsubscriptions'))
-#
-#
-# @bp.route('/showdatasources', methods=['GET'])
-# def showdatasources():
-#     datasources = []
-#     for stream_id, stream in datasourceManager.streams.items():
-#         class datasource:  # local class to be returned to html page
-#             pass
-#
-#         datasource.stream_id = stream_id
-#
-#         # get sensor for stream
-#         sensorId = ngsi_ld.ngsi_parser.get_stream_generatedBy(stream)
-#         sensor = datasourceManager.get_sensor(sensorId)
-#
-#         # get observation for sensor
-#         if sensor:
-#             observationId = ngsi_ld.ngsi_parser.get_sensor_madeObservation(sensor)
-#             observation = datasourceManager.get_observation(observationId)
-#
-#             if observation:
-#                 datasource.observation = json.dumps(observation, indent=2)
-#                 datasource.observedat = ngsi_ld.ngsi_parser.get_observation_timestamp(observation)
-#
-#             obspropertyId = ngsi_ld.ngsi_parser.get_sensor_observes(sensor)
-#             obsproperty = datasourceManager.get_observableproperty(obspropertyId)
-#             datasource.obsproperty = json.dumps(obsproperty, indent=2)
-#
-#         datasource.stream = json.dumps(stream, indent=2)
-#         datasource.sensor = json.dumps(sensor, indent=2)
-#         datasources.append(datasource)
-#     return render_template('datasources.html', datasources=datasources)
 
 
 @bp.route('/callback/sensor', methods=['POST'])
@@ -193,7 +119,7 @@ def handle_new_sensor(data):
             except KeyError:
                 logger.debug("could not determine the ID of the Quality for sensor " + sensorID + ". Detection of missing values will not be possible")
         else:
-            # logger.debug("FaultDetection not enabled for " + sensorID)
+            logger.debug("FaultDetection not enabled for " + sensorID)
             pass
 
     return Response('OK', status=200)

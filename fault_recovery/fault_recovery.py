@@ -1,10 +1,12 @@
 import threading
+import logging
 from configuration import Config
 from fault_recovery.fault_recovery_mcmc import FaultRecoveryMCMC
 from fault_recovery.fault_recovery_bme import FaultRecoveryBME
 
 RECOVERY_METHOD_VARIABLE_NAME = "RECOVERY_METHOD"
 
+logger = logging.getLogger('monitoring')
 
 class FaultRecovery:
 
@@ -13,7 +15,7 @@ class FaultRecovery:
         self.recoveryMethods = {"BME" : FaultRecoveryBME, "MCMC" : FaultRecoveryMCMC}
 
     def newSensor(self, sensorID, entity):
-        print("FR newSensor called")
+        logger.debug("FR newSensor called")
         if sensorID in self.predictors:
             # the sensor was previously faulty and we already have a instance of the FR
             return
@@ -21,7 +23,7 @@ class FaultRecovery:
         # TODO: Automated way to destinguish which FaultRecovery method to use?
         m = Config.getEnvironmentVariable(RECOVERY_METHOD_VARIABLE_NAME)
         if not m in self.recoveryMethods:
-            print("recovery method", m, "not supported")
+            logger.debug("recovery method " + m + " not supported")
             return
         # fr = FaultRecoveryMCMC()
         fr = self.recoveryMethods[m]()
@@ -32,7 +34,7 @@ class FaultRecovery:
 
 
     def update(self, sensorID, value):
-        print("FR update callled")
+        logger.debug("FR update callled")
         if sensorID in self.predictors:
             return self.predictors[sensorID].update(sensorID, value)
         else:

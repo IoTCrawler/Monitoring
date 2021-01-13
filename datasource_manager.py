@@ -35,9 +35,9 @@ class DatasourceManager:
 
     def initialise_entities(self, ngsi_type):
         entities = broker_interface.get_all_entities(ngsi_type)
-        logger.debug("There are " + str(len(entities)) + " existing " + str(ngsi_type))
+        logger.debug("There are " + str(len(entities)) + " existing " + str(ngsi_type) + " to initialise")
         for entity in entities:
-            logger.debug("Initialise entity " + ngsi_parser.get_id(entity))
+            # logger.debug("Initialise entity " + ngsi_parser.get_id(entity))
             self.update(entity)
 
     def reinitialise(self, finishCallback=None):
