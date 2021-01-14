@@ -96,7 +96,7 @@ def callback():
         data = [data]
     return handle_new_sensor(data)
 
-def handle_new_sensor(data):
+def handle_new_sensor(data, after_init=False):
     for entity in data:
         entity = resolve_prefixes(entity)
         s = Sensor(entity)
@@ -104,13 +104,14 @@ def handle_new_sensor(data):
         sensorsMap[sensorID] = s
         if s.isFaultDetectionEnabled():
             logger.debug("start FD for sensor: " + sensorID)
-            datasourceManager.update(entity)
-            faultDetection.newSensor(entity)
-            faultRecovery.newSensor(sensorID, entity)
-            sensorToObservationMap[s.streamObservationID()] = s
-
-            so = get_entity(s.streamObservationID())
             try:
+                if not after_init:
+                    datasourceManager.update(entity)
+                faultDetection.newSensor(entity)
+                faultRecovery.newSensor(sensorID, entity)
+                sensorToObservationMap[s.streamObservationID()] = s
+
+                so = get_entity(s.streamObservationID())
                 if so:
                     iotstreamID = so['http://purl.org/iot/ontology/iot-stream#belongsTo']['object']
                     streamToSensorMap[iotstreamID] = s
@@ -118,6 +119,8 @@ def handle_new_sensor(data):
                     logger.debug("Could not get Stream entity " + s.streamObservationID())
             except KeyError:
                 logger.debug("could not determine the ID of the Quality for sensor " + sensorID + ". Detection of missing values will not be possible")
+            except Exception as e:
+                logger.debug("Error handling sensor " + sensorID + str(e))
         else:
             logger.debug("FaultDetection not enabled for " + sensorID)
             pass
@@ -349,7 +352,7 @@ def datasourceManagerInitialised():
         # print("found sensor", sID)
         # print(sensors[sID])
         sensor_list.append(sensors[sID])
-    handle_new_sensor(sensor_list)
+    handle_new_sensor(sensor_list, True)
 
 if __name__ == "__main__":
     # label = get_observable_property_label("urn:ngsi-ld:ObservableProperty:AvailableParkingSpaces")
