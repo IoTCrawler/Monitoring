@@ -109,14 +109,17 @@ def handle_new_sensor(data, after_init=False):
                     datasourceManager.update(entity)
                 faultDetection.newSensor(entity)
                 faultRecovery.newSensor(sensorID, entity)
-                sensorToObservationMap[s.streamObservationID()] = s
-
-                so = get_entity(s.streamObservationID())
+                streamObservationID = s.streamObservationID()
+                if not streamObservationID:
+                    logger.debug("Sensor " + sensorID + " does not reference a StreamObservation (http://www.w3.org/ns/sosa/madeObservation)")
+                    continue
+                sensorToObservationMap[streamObservationID] = s
+                so = get_entity(streamObservationID)
                 if so:
                     iotstreamID = so['http://purl.org/iot/ontology/iot-stream#belongsTo']['object']
                     streamToSensorMap[iotstreamID] = s
                 else:
-                    logger.debug("Could not get Stream entity " + s.streamObservationID())
+                    logger.debug("Could not get Stream entity " + streamObservationID)
             except KeyError:
                 logger.debug("could not determine the ID of the Quality for sensor " + sensorID + ". Detection of missing values will not be possible")
             except Exception as e:
