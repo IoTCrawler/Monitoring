@@ -85,7 +85,7 @@ def showrunning():
 def callback():
     data = request.get_json()
     # logger.debug("callback sensor called" + str(data))
-    # print("callback sensor called" + str(data)) 
+    # print("callback sensor called" + str(data))
 
     ngsi_type = ngsi_ld.ngsi_parser.get_type(data)
 
