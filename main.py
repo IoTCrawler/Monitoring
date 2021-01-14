@@ -85,7 +85,7 @@ def showrunning():
 def callback():
     data = request.get_json()
     # logger.debug("callback sensor called" + str(data))
-    # print("callback sensor called" + str(data)) 
+    # print("callback sensor called" + str(data))
 
     ngsi_type = ngsi_ld.ngsi_parser.get_type(data)
 
@@ -414,7 +414,7 @@ if __name__ == "__main__":
         # datasourceManager.initialise(datasourceManagerInitialised)
         threading.Thread(target=datasourceManager.initialise, args=(datasourceManagerInitialised,)).start()
     except Exception as e:
-        print("Error initialising datasource manager", e)
+        logger.error("Error initialising datasource manager", e)
 
     app.run(host=Config.getEnvironmentVariable('FD_HOST'), port=int(Config.getEnvironmentVariable('FD_PORT')), debug=False)
-    datasourceManager.del_all_subscriptions()
+    datasourceManager.del_all_FD_subscriptions()
