@@ -108,6 +108,9 @@ class FaultDetection:
             self.prev_difference[sensorID] = difference[1]
         self.old_values[sensorID] = value
         #return 0 if normal return 1 if faulty
+        if not sensorID in self.detectors:
+            logger.debug("FD update called with sensor where no detector was trained for! (id=" + sensorID + ")")
+            return self.delVS(sensorID), 0
         if self.detectors[sensorID].detector(difference) == 'F':
             self.no_of_faults[sensorID] = self.no_of_faults[sensorID] + 1
             self.reset_counter[sensorID] = 0

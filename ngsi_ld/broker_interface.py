@@ -222,13 +222,13 @@ def delete_ngsi_attribute(attr_id, eid):
 
 def _delete_ngsi_attribute(attr_id, eid):
     try:
-        logger.debug("Delete ngsi attribute to entity " + eid + " : " + attr_id)
+        logger.debug("Delete ngsi attribute at entity " + eid + " : " + attr_id)
         url = Config.getEnvironmentVariable('NGSI_ADDRESS') + "/ngsi-ld/v1/entities/" + eid + "/attrs/" + attr_id
         r = requests.delete(url, headers=headers)
         if r.status_code != 204:
             logger.error("Deleting attribute faild. Status code = " + str(r.status_code))
     except requests.exceptions.ConnectionError as e:
-        logger.error("Error while adding attribute to ngsi entity" + str(e))
+        logger.error("Error while deleting attribute to ngsi entity" + str(e))
 
 def create_ngsi_entity(ngsi_msg):
     t = threading.Thread(target=_create_ngsi_entity, args=(ngsi_msg,))
