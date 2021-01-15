@@ -41,8 +41,13 @@ deque_handler = DequeLoggerHandler(int(Config.get('logging', 'maxlogentries')))
 deque_handler.setLevel(logging.DEBUG)
 deque_handler.setFormatter(formatter)
 
+stream_handler = logging.StreamHandler()
+stream_handler.setLevel(logging.DEBUG)
+stream_handler.setFormatter(formatter)
+
 logger.addHandler(file_handler)
 logger.addHandler(deque_handler)
+logger.addHandler(stream_handler)
 logger.info("logger ready")
 
 bp = Blueprint('monitoring', __name__, static_url_path='', static_folder='static', template_folder='html')
