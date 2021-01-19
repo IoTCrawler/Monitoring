@@ -55,7 +55,8 @@ class Detector:
             table[ind1][ind2]+=1
         
         self.df_pb = pd.DataFrame.from_records(table, index=self.difference_uniq)
-        self.df_pb.loc[:,:] = round(self.df_pb.loc[:,:].div(self.df.sum(axis=1), axis=0),1)*10
+        #self.df_pb.loc[:,:] = round(self.df_pb.loc[:,:].div(self.df.sum(axis=1), axis=0),1)*10
+        self.df_pb.loc[:,:] = round(self.df_pb.loc[:,:].div(self.df_pb.sum(axis=1), axis=0),1)*10
         
         
     def detector(self, test_difference):
