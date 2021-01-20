@@ -53,15 +53,15 @@ class FaultDetection:
         #todo: if sensor has no training data, store values and create data
 
         result = utils.loadTrainingData(ngsi_id)
-        
+
         if ngsi_id in result:
-            logger.debug("FD - train for", ngsi_id)
+            logger.debug("FD - train for" + ngsi_id)
             self.detectors[ngsi_id] = Detector()
             self.detectors[ngsi_id].get_data(result[ngsi_id])
             self.detectors[ngsi_id].train()
             logger.debug("FD - training of " + ngsi_id + " finished")
         else:
-            logger.debug("no training data for " + ngsi_id + " found")
+            logger.debug("FD - no training data for " + ngsi_id + " found")
 
     #return 1 for create VS, 0 for dont
     def callVS(self, sensorID):
