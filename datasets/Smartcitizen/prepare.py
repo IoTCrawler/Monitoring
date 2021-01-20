@@ -23,6 +23,9 @@ if __name__ == '__main__':
         aarhusID = sensorNameMap[sensorID]
         url = "https://iot-crawler-adapter.srvitkiot01.itkdev.dk/devices/" + aarhusID
         r = requests.get(url)
+        if r.status_code != 200:
+            print("Loading device information for", sensorID, "returned:", r.status_code)
+            continue
         data = r.json()
 
         sID = "unknown"
