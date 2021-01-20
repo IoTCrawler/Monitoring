@@ -183,12 +183,14 @@ def _call_FD_update(streamObservationID, sensorID, value):
         # sensor provide a new and valid observation, remove the imputed one
         datasourceManager.remove_attr(streamObservationID, IMPUTATION_PROPERTY_NAME)
         datasourceManager.remove_attr(streamObservationID, VERDICT_PROPERTY_NAME)
-        imputedStreamObservationIDs.remove(streamObservationID)
+        if streamObservationID in imputedStreamObservationIDs:
+            imputedStreamObservationIDs.remove(streamObservationID)
     else: # value was not faulty
         #TODO: is this what is agreed upon?
         datasourceManager.remove_attr(streamObservationID, IMPUTATION_PROPERTY_NAME)
         datasourceManager.remove_attr(streamObservationID, VERDICT_PROPERTY_NAME)
-        imputedStreamObservationIDs.remove(streamObservationID)
+        if streamObservationID in imputedStreamObservationIDs:
+            imputedStreamObservationIDs.remove(streamObservationID)
 
     if createOrDeleteVS == 2:
         stopVirtualSensor(sensorID)

@@ -76,7 +76,10 @@ def loadTrainingData(sensorID, dropSeconds=False):
                     dt = dt.replace(second=0)
                 # data.append({"timestampStr": dt.isoformat(), "timestamp": dt, "value": float(line[fieldnames[1]])})
                 # no timestampStr as agreed in IoTCrawler
-                data.append({"timestamp": dt, "value": float(line[fieldnames[1]])})
+                try:
+                    data.append({"timestamp": dt, "value": float(line[fieldnames[1]])})
+                except:
+                    pass # can not log each line that does fail
             # print("loaded", len(data), "samples")
         result[sensorID[i]] = data
 
