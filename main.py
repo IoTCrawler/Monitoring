@@ -160,7 +160,11 @@ def callback_observation():
     return Response('OK', status=200)
 
 def _call_FD_update(streamObservationID, sensorID, value):
-    createOrDeleteVS, isValueFaulty = faultDetection.update(sensorID, value)
+    try:
+        createOrDeleteVS, isValueFaulty = faultDetection.update(sensorID, value)
+    except Exception as e:
+        logger.error("FD update failed: " + str(e))
+        return
     logger.debug("FD verdict:  createOrDeleteVS = %d, isValueFaulty = %d" % (createOrDeleteVS, isValueFaulty))
 
     if isValueFaulty:

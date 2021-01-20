@@ -42,7 +42,6 @@ class FaultDetection:
 
     def _newSensor(self, entity):
         ngsi_id, ngsi_type = ngsi_parser.get_IDandType(entity)
-        result = utils.loadTrainingData(ngsi_id)
         self.no_of_misses[ngsi_id] = 0
         self.no_of_faults[ngsi_id] = 0
         self.createdVS[ngsi_id] = 0
@@ -52,6 +51,9 @@ class FaultDetection:
         self.prev_difference[ngsi_id] = None
         #timeInterval, unit = ngsi_parser.get_sensor_updateinterval_and_unit(entity)
         #todo: if sensor has no training data, store values and create data
+
+        result = utils.loadTrainingData(ngsi_id)
+        
         if ngsi_id in result:
             logger.debug("FD - train for", ngsi_id)
             self.detectors[ngsi_id] = Detector()
