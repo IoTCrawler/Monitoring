@@ -226,7 +226,10 @@ def _delete_ngsi_attribute(attr_id, eid):
         url = Config.getEnvironmentVariable('NGSI_ADDRESS') + "/ngsi-ld/v1/entities/" + eid + "/attrs/" + attr_id
         r = requests.delete(url, headers=headers)
         if r.status_code != 204:
-            logger.error("Deleting attribute faild. Status code = " + str(r.status_code))
+            if r.status_code == 404:
+                logger.debug("Deleting return 404 - entity did not have the attribute.")
+            else:
+                logger.error("Deleting attribute faild. Status code = " + str(r.status_code))
     except requests.exceptions.ConnectionError as e:
         logger.error("Error while deleting attribute to ngsi entity" + str(e))
 

@@ -30,6 +30,10 @@ COPY main.py /monitoring/main.py
 COPY sensor.py /monitoring/sensor.py
 COPY datasource_manager.py /monitoring/datasource_manager.py
 
+WORKDIR /monitoring/datasets/Smartcitizen
+RUN python3 prepare.py
+WORKDIR /monitoring
+
 
 ENV NGSI_ADDRESS http://155.54.95.248:9090
 ENV FD_HOST 0.0.0.0
