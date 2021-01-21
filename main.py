@@ -130,7 +130,7 @@ def handle_new_sensor(data, after_init=False):
             except Exception as e:
                 logger.debug("Error handling sensor " + sensorID + str(e))
         else:
-            logger.debug("FaultDetection not enabled for " + sensorID)
+            # logger.debug("FaultDetection not enabled for " + sensorID) # this causes a lot of logging at the start
             pass
 
     return Response('OK', status=200)
