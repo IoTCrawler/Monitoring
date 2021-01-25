@@ -284,8 +284,8 @@ def _call_FD_missingValue(qualityID, sensorID, freq):
         imputedStreamObservationIDs.remove(sensor.streamObservationID())
     else: # value was not missing
         #TODO: is this what is agreed upon?
-        datasourceManager.remove_attr(streamObservationID, IMPUTATION_PROPERTY_NAME)
-        datasourceManager.remove_attr(streamObservationID, VERDICT_PROPERTY_NAME)
+        datasourceManager.remove_attr(sensor.streamObservationID(), IMPUTATION_PROPERTY_NAME)
+        datasourceManager.remove_attr(sensor.streamObservationID(), VERDICT_PROPERTY_NAME)
         imputedStreamObservationIDs.remove(sensor.streamObservationID())
 
     if createOrDeleteVS == 2:
