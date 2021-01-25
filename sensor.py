@@ -28,7 +28,10 @@ class Sensor:
         returns a tuple (latitude, longitude)
         """
         latlong = self.__saveGet("location", "value", "coordinates")
-        return (latlong[0], latlong[1])
+        if latlong:
+            return (latlong[0], latlong[1])
+        else:
+            return (0, 0)
 
     def location(self):
         """
