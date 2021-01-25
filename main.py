@@ -108,7 +108,7 @@ def handle_new_sensor(data, after_init=False):
         sensorID = s.ID()
         sensorsMap[sensorID] = s
         if s.isFaultDetectionEnabled():
-            if sensorID in sensorMap: # FD already started
+            if sensorID in sensorsMap: # FD already started
                 logger.debug("FD for sensor: " + sensorID + " already running")
                 continue
             logger.debug("start FD for sensor: " + sensorID)
