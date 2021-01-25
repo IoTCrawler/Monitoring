@@ -106,11 +106,11 @@ def handle_new_sensor(data, after_init=False):
         entity = resolve_prefixes(entity)
         s = Sensor(entity)
         sensorID = s.ID()
-        sensorsMap[sensorID] = s
+        if sensorID in sensorsMap: # FD already started
+            logger.debug("FD for sensor: " + sensorID + " already running")
+            continue
         if s.isFaultDetectionEnabled():
-            if sensorID in sensorsMap: # FD already started
-                logger.debug("FD for sensor: " + sensorID + " already running")
-                continue
+            sensorsMap[sensorID] = s
             logger.debug("start FD for sensor: " + sensorID)
             try:
                 if not after_init:
