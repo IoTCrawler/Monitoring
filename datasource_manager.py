@@ -19,6 +19,7 @@ class DatasourceManager:
         # self.initialise()
 
     def initialise(self, finishCallback=None):
+        self.del_all_FD_subscriptions() # remove all old subscriptions first
         broker_interface.initialise_subscriptions(self.subscriptions,
                                                   # (NGSI_Type.IoTStream, NGSI_Type.Sensor, NGSI_Type.ObservableProperty))
                                                   (NGSI_Type.Sensor, NGSI_Type.StreamObservation, NGSI_Type.QoI))
