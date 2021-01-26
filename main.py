@@ -264,7 +264,7 @@ def _call_FD_missingValue(qualityID, sensorID, freq):
     logger.debug("FD verdict:  createOrDeleteVS = %d, isValueMissing = %d" % (createOrDeleteVS, isValueMissing))
     sensor = sensorsMap[sensorID]
     if isValueMissing:
-        imputeValue = faultRecovery.update(sensorID, None)
+        imputeValue = faultRecovery.update(sensorID, datetime.datetime.now().isoformat())
         if imputeValue != None:
             newStremObservation = makeStreamObservation(sensor, imputeValue)
             logger.debug("will impute value")

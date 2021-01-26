@@ -60,10 +60,10 @@ class FaultRecoveryMCMC:
         pickle_out.close()
         return
 
-    def update(self, sensorID, value):
+    def update(self, sensorID, ts):
         # print("FR update callled")
-        # timeStamp = dparser.parse(str(value), fuzzy=True).timestamp() % 10000
-        timeStamp = np.float64(self.minutesSinceMidnight(dparser.parse(str(value), fuzzy=True)))
+        # timeStamp = dparser.parse(str(ts), fuzzy=True).timestamp() % 10000
+        timeStamp = np.float64(self.minutesSinceMidnight(dparser.parse(str(ts), fuzzy=True)))
         # print("current ts:", timeStamp)
         missingValuePosition = 4
         # pickle_in_data = open("models/modelout.pickle", "rb")
