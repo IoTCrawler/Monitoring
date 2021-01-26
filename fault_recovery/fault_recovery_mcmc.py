@@ -30,6 +30,7 @@ class FaultRecoveryMCMC:
         # return timestamp.day * 1440 + timestamp.hour * 60 + timestamp.minute
 
     def newSensor(self, sensorID, entity):
+        logger.error("FR MCMC: traing for " + sensorID + " started")
         # print("FR newSensor called")
         try:
             muValue, sigmaValue, genNumber = self.get_norm_dist(sensorID)
@@ -41,8 +42,12 @@ class FaultRecoveryMCMC:
             return
         synthetic_data_model = pm.Model()
         with synthetic_data_model:
-            observationProb = pm.Normal('observation_value', mu=muValue, sigma=sigmaValue)
-            returns = pm.Normal('out', mu=observationProb, sigma=self.sigmaMCMC)  # df
+            try:
+                observationProb = pm.Normal('observation_value', mu=muValue, sigma=sigmaValue)
+                returns = pm.Normal('out', mu=observationProb, sigma=self.sigmaMCMC)  # df
+            except Exception as e:
+                logger.error("FR MCMC: traing failed for " + sensorID + " (" + str(e) + ") - pm.Normal")
+                return
             if self.stepFunction == 0:
                 step = pm.Metropolis()
             elif self.stepFunction == 1:
