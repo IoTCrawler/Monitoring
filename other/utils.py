@@ -103,7 +103,7 @@ def _makeResultProperty(value, observedAt, isImputed=False):
       """ + valueTemplates[vTemplate] + """,
       "observedAt" : "%s"
     },
-    {"%s" : {
+    "%s" : {
       "type" : "Property",
       "value": "faulty"
     },
@@ -123,30 +123,8 @@ def makeStreamObservation(sensor, value):
     dt = datetime.datetime.now()
     dt = dt.replace(microsecond=0)
     dt_iso = dt.isoformat() + "Z" # the MDR requires the Z at the end
-#     ngsi_msg = """{
-#   "id" : "%s",
-#   "type" : "http://purl.org/iot/ontology/iot-stream#StreamObservation",
-#   "http://purl.org/iot/ontology/iot-stream#belongsTo" : {
-#     "type" : "Relationship",
-#     "object" : "%s"
-#   },
-#   %s,
-#   "http://www.w3.org/ns/sosa/madeBySensor" : {
-#     "type" : "Relationship",
-#     "object" : "%s"
-#   },
-#   "http://www.w3.org/ns/sosa/observedProperty" : {
-#     "type" : "Relationship",
-#     "object" : "%s"
-#   },
-#   "http://www.w3.org/ns/sosa/resultTime" : {
-#     "type" : "Property",
-#     "value" : "%s"
-#   },
-#   "@context" : [ "https://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld" ]
-# }
-#     """ % (sensor.streamObservationID(), sensor.getStreamID(), _makeResultProperty(value, dt_iso, True), sensor.ID(), sensor.observesPropertyID(), dt_iso)
     ngsi_msg = _makeResultProperty(value, dt_iso, True)
+    # print(ngsi_msg)
     return json.loads(ngsi_msg)
 
 def makeFDVerdict(verdict="ok"):

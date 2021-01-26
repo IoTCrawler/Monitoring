@@ -34,7 +34,7 @@ class FaultRecoveryMCMC:
         try:
             muValue, sigmaValue, genNumber = self.get_norm_dist(sensorID)
         except Exception as e:
-            logger.error("FR MCMC: traing failed for " + sensorID + " (" + str(e) + ")")
+            logger.error("FR MCMC: traing failed for " + sensorID + " (" + str(e) + ") - no traing data?")
             return
         if not muValue:
             # no training data
