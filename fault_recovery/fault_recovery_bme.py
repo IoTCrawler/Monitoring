@@ -1,3 +1,5 @@
+import logging
+
 from oct2py import octave
 import pprint
 import numpy as np
@@ -9,6 +11,7 @@ from sensor import Sensor
 from other.utils import loadTrainingData, ObservationCache
 from copy import deepcopy
 
+logger = logging.getLogger('monitoring')
 
 class FaultRecoveryBME:
 
@@ -23,6 +26,7 @@ class FaultRecoveryBME:
         self.varparam = None
         self.varmodel = 'gaussianC'   #modelo de variograma
         self.locations_array = None
+        self.trainedSensors = [] # keep track of sensors we have finished training
 
     def newSensor(self, sensorID, entity):
         print("FR BME newSensor called")
@@ -110,10 +114,13 @@ class FaultRecoveryBME:
             # varparam = [[901.716912014706],[0.000115966796875], [0]]   #previously computed var and sill variogram values
             self.varparam = [[sill],[rang], [nugget]]   #previously computed var and sill variogram values
             print(self.varparam)
+            self.trainedSensors.append(sensorID)
+            logger.debug("FR BMC: training of " + sensorID + " finished")
 
     def update(self, sensorID, value):
-        if not self.varparam or len(self.neighbours) == 0:
+        if not sensorID in self.trainedSensors or len(self.neighbours) == 0:
             # training not finished or no neighbours found, nothing we can do
+            logger.error("FR BMC: update called for untrained sensor " + sensorID)
             return None
         print("FR BME update called")
         data = [ObservationCache.get(n.ID(), 0.0) for n in self.neighbours] # [263.0, 217.0] #known values from valid sensors

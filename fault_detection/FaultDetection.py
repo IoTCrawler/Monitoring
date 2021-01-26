@@ -55,7 +55,7 @@ class FaultDetection:
         result = utils.loadTrainingData(ngsi_id)
 
         if ngsi_id in result:
-            logger.debug("FD - train for" + ngsi_id)
+            logger.debug("FD - train of " + ngsi_id)
             self.detectors[ngsi_id] = Detector()
             self.detectors[ngsi_id].get_data(result[ngsi_id])
             self.detectors[ngsi_id].train()
@@ -112,7 +112,7 @@ class FaultDetection:
         #return 0 if normal return 1 if faulty
         if not sensorID in self.detectors:
             logger.debug("FD update called with sensor where no detector was trained for! (id=" + sensorID + ")")
-            return self.delVS(sensorID), 0
+            return 0, 0
         if self.detectors[sensorID].detector(difference) == 'F':
             self.no_of_faults[sensorID] = self.no_of_faults[sensorID] + 1
             self.reset_counter[sensorID] = 0

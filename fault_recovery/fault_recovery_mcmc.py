@@ -1,4 +1,5 @@
 import threading
+import logging
 
 from ngsi_ld import ngsi_parser
 from other import utils
@@ -9,6 +10,7 @@ import pymc3 as pm
 import pickle
 import os.path
 
+logger = logging.getLogger('monitoring')
 
 class FaultRecoveryMCMC:
     # ................................................ Variables ......................................................
@@ -17,7 +19,7 @@ class FaultRecoveryMCMC:
     generatedNumber = 500
     windows = 8
     burninTime = 200
-
+    trainedSensors = [] # keep track of sensors we have finished training
     # ................................................ Functions() ....................................................
 
     def makeModelFilename(self, filename):
@@ -58,9 +60,14 @@ class FaultRecoveryMCMC:
         pickle_out = open(self.makeModelFilename("modelout_" + sensorID + ".pickle"), "wb")
         pickle.dump(finalArray, pickle_out)
         pickle_out.close()
+        logger.debug("FR MCMC: training of " + sensorID + " finished")
+        self.trainedSensors.append(sensorID)
         return
 
     def update(self, sensorID, ts):
+        if not sensorID in self.trainedSensors:
+            logger.error("FR MCMC: update called for untrained sensor " + sensorID)
+            return None
         # print("FR update callled")
         # timeStamp = dparser.parse(str(ts), fuzzy=True).timestamp() % 10000
         timeStamp = np.float64(self.minutesSinceMidnight(dparser.parse(str(ts), fuzzy=True)))
