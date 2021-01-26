@@ -273,8 +273,10 @@ def _call_FD_missingValue(qualityID, sensorID, freq):
         else:
             logger.debug("FR did not provide imputable value")
         if createOrDeleteVS == 1:
-            # call VS creater
-            replaceBrokenSensor(sensorID) # through virtual sensor
+            # TODO: call VS creater
+            # failed with: Failed to establish a new connection: [Errno -2] Name or service not known
+            # replaceBrokenSensor(sensorID) # through virtual sensor
+            pass
 
     elif sensor.streamObservationID() in imputedStreamObservationIDs: # The Monitoring should receive the Observation before
                                                                       # so this should never be true, but in case Monitoring missed it.
