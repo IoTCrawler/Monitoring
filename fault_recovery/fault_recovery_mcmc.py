@@ -31,7 +31,11 @@ class FaultRecoveryMCMC:
 
     def newSensor(self, sensorID, entity):
         # print("FR newSensor called")
-        muValue, sigmaValue, genNumber = self.get_norm_dist(sensorID)
+        try:
+            muValue, sigmaValue, genNumber = self.get_norm_dist(sensorID)
+        except Exception as e:
+            logger.error("FR MCMC: traing failed for " + sensorID + " (" + str(e) + ")")
+            return
         if not muValue:
             # no training data
             return
