@@ -281,13 +281,19 @@ def _call_FD_missingValue(qualityID, sensorID, freq):
     elif sensor.streamObservationID() in imputedStreamObservationIDs: # The Monitoring should receive the Observation before
                                                                       # so this should never be true, but in case Monitoring missed it.
         # sensor provide a new and valid observation, remove the imputed one
-        datasourceManager.remove_attr(sensor.streamObservationID(), IMPUTATION_PROPERTY_NAME)
-        datasourceManager.remove_attr(sensor.streamObservationID(), VERDICT_PROPERTY_NAME)
-        imputedStreamObservationIDs.remove(sensor.streamObservationID())
+        try:
+            datasourceManager.remove_attr(sensor.streamObservationID(), IMPUTATION_PROPERTY_NAME)
+            datasourceManager.remove_attr(sensor.streamObservationID(), VERDICT_PROPERTY_NAME)
+            imputedStreamObservationIDs.remove(sensor.streamObservationID())
+        except Exception as e:
+            logger.error("removing attribute failed: " + str(e))
     else: # value was not missing
         #TODO: is this what is agreed upon?
-        datasourceManager.remove_attr(sensor.streamObservationID(), IMPUTATION_PROPERTY_NAME)
-        datasourceManager.remove_attr(sensor.streamObservationID(), VERDICT_PROPERTY_NAME)
+        try:
+            datasourceManager.remove_attr(sensor.streamObservationID(), IMPUTATION_PROPERTY_NAME)
+            datasourceManager.remove_attr(sensor.streamObservationID(), VERDICT_PROPERTY_NAME)
+        except Exception as e:
+            logger.error("removing attribute failed: " + str(e))
 
     if createOrDeleteVS == 2:
         # call VS creater to delete
