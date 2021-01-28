@@ -100,13 +100,14 @@ class FaultRecoveryBME:
                 if not self.neighbours[i].ID() in trainingDataAll:
                     # no training data for this neighbour, skip
                     continue
-                lat, lng = self.neighbours[i].coordinates()
+                lng, lat = self.neighbours[i].coordinates()
                 lines.append("%d %d %f %f" % ((i+1), (i+2), lat, lng))
             localizacionesS = "\n".join(lines)
 
             #
             modelo = 'gausiano' #""pepita", "esferico", "exponencial", "gausiano"
             result = subprocess.check_output(['Rscript', self.r_script_path, datosS, localizacionesS, modelo], universal_newlines = True)
+            # result = subprocess.check_output(['Rscript', self.r_script_path, datosS, localizacionesS, modelo])
             parts = result.split(sep=" ")
             sill = float(parts[0])
             rang = float(parts[1])
