@@ -1,5 +1,6 @@
 import threading
 import logging
+import traceback
 
 from ngsi_ld import ngsi_parser
 from other import utils
@@ -47,6 +48,7 @@ class FaultRecoveryMCMC:
                 returns = pm.Normal('out', mu=observationProb, sigma=self.sigmaMCMC)  # df
             except Exception as e:
                 logger.error("FR MCMC: traing failed for " + sensorID + " (" + str(e) + ") - pm.Normal")
+                traceback.print_exception(e)
                 return
             if self.stepFunction == 0:
                 step = pm.Metropolis()
