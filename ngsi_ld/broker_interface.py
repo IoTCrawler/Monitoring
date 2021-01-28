@@ -337,7 +337,7 @@ def get_all_subscriptions():
             params = {'limit': limit, 'offset': offset}
             r = requests.get(url, headers=headers, params=params)
             if r.status_code != 200:
-                logger.error("Error requesting entities of type " + entitytype + ": " + r.text)
+                logger.error("Error requesting subscriptions: " + r.text)
                 break
             tmpresult = r.json()
             subs.extend(tmpresult)
@@ -348,7 +348,7 @@ def get_all_subscriptions():
             break
         return subs
     except requests.exceptions.ConnectionError as e:
-        logger.error("Error while getting entities of type " + entitytype + ": " + str(e))
+        logger.error("Error while getting subscriptions: " + str(e))
 
 
 
