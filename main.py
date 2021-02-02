@@ -163,6 +163,7 @@ def callback_observation():
     return Response('OK', status=200)
 
 def _call_FD_update(streamObservationID, sensorID, value):
+    value = float(value)
     try:
         createOrDeleteVS, isValueFaulty = faultDetection.update(sensorID, value)
     except Exception as e:
