@@ -358,12 +358,12 @@ def reinit():
     # all training will have to be done again, but since we don't know why
     # reinit was called its the best we can do.
     sensorsMap = {}
-    sensorToObservationMap = {}
-    streamToSensorMap = {}
-    qualityToStreamMap = {}
-    imputedStreamObservationIDs = [] # list of observation IDs with IMPUTATION_PROPERTY_NAME attributes
-    faultDetection = FaultDetection()
-    faultRecovery = FaultRecovery()
+    # sensorToObservationMap = {}
+    # streamToSensorMap = {}
+    # qualityToStreamMap = {}
+    # imputedStreamObservationIDs = [] # list of observation IDs with IMPUTATION_PROPERTY_NAME attributes
+    # faultDetection = FaultDetection()
+    # faultRecovery = FaultRecovery()
 
     threading.Thread(target=datasourceManager.reinitialise, args=(datasourceManagerInitialised,)).start()
     return "initialising started. This may take a moment."
