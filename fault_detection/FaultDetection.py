@@ -99,6 +99,7 @@ class FaultDetection:
 
     #return: arg1 - 0,1 or 2 -> no operation, callVS, delete VS | arg2 - 0,1 -> No fault, Fault
     def update(self, sensorID, value):
+        logger.debug("FD update() called: " + sensorID)
         if self.old_values[sensorID] == None:
             self.old_values[sensorID] = value
             return self.callVS(sensorID), 0 #skip if its the first value - No difference

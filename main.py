@@ -226,11 +226,12 @@ def callback_qoi():
 
     for entity in data:
         entity = resolve_prefixes(entity)
+        qoiID = entity['id']
         if not 'https://w3id.org/iot/qoi#frequency' in entity:
             # the meta-data for this sensor did not specify an update interval
             # impossible to dermine if a observation is missing
+            logger.debug("QoI has no frequency: " + qoiID)
             continue
-        qoiID = entity['id']
         sensorID = None
         if qoiID in qualityToStreamMap:
             streamID = qualityToStreamMap[qoiID]
