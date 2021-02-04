@@ -4,6 +4,7 @@ import logging
 import uuid
 import threading
 import sys
+from time import sleep
 
 from flask import Flask, redirect, render_template, send_file, url_for, request, Blueprint, flash, Response
 
@@ -110,6 +111,7 @@ def handle_new_sensor(data, after_init=False):
             logger.debug("FD for sensor: " + sensorID + " already running")
             continue
         if s.isFaultDetectionEnabled():
+            sleep(3.0) # why the problems first time
             sensorsMap[sensorID] = s
             logger.debug("start FD for sensor: " + sensorID)
             try:
@@ -385,6 +387,7 @@ def datasourceManagerInitialised():
         # print("found sensor", sID)
         # print(sensors[sID])
         sensor_list.append(sensors[sID])
+    sleep(10.0)
     handle_new_sensor(sensor_list, True)
 
 if __name__ == "__main__":
