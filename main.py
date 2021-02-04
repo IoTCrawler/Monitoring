@@ -161,6 +161,8 @@ def callback_observation():
             sensorID = sensorToObservationMap[streamObservationID].ID()
             ObservationCache.update(sensorID, value)
             threading.Thread(target=_call_FD_update, args=(streamObservationID, sensorID, value)).start()
+        else:
+            logger.debug("Unknown Sensor Observation relation - " + streamObservationID)
 
     return Response('OK', status=200)
 
@@ -255,8 +257,6 @@ def callback_qoi():
                 else:
                     logger.error("no sensor known having stream " + streamID)
                     continue
-            elif streams and len(streams) > 1:
-                logger.warning("multiple streams have Quality with ID " + qoiID)
             else:
                 logger.error("no stream found having quality " + qoiID)
                 continue

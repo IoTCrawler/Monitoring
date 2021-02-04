@@ -16,6 +16,7 @@ class FaultRecovery:
 
     def reset(self):
         self.predictors = {}
+        logger.debug("FR reseted")
 
     def newSensor(self, sensorID, entity):
         logger.debug("FR newSensor called")
