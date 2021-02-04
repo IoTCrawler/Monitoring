@@ -14,6 +14,9 @@ class FaultRecovery:
         self.predictors = {}
         self.recoveryMethods = {"BME" : FaultRecoveryBME, "MCMC" : FaultRecoveryMCMC}
 
+    def reset(self):
+        self.predictors = {}
+
     def newSensor(self, sensorID, entity):
         logger.debug("FR newSensor called")
         if sensorID in self.predictors:

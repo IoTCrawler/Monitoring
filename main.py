@@ -366,6 +366,7 @@ def reinit():
     # imputedStreamObservationIDs = [] # list of observation IDs with IMPUTATION_PROPERTY_NAME attributes
     # faultDetection = FaultDetection()
     # faultRecovery = FaultRecovery()
+    faultRecovery.reset()
 
     threading.Thread(target=datasourceManager.reinitialise, args=(datasourceManagerInitialised,)).start()
     return "initialising started. This may take a moment."
