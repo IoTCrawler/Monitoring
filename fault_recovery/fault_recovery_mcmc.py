@@ -45,7 +45,7 @@ class FaultRecoveryMCMC:
         with synthetic_data_model:
             try:
                 observationProb = pm.Normal('observation_value', mu=muValue, sigma=sigmaValue)
-                logger.debug("FR MCMC pm.Normal values:")
+                logger.debug("FR MCMC pm.Normal values for " + sensorID + ":")
                 logger.debug("mu:" + str(muValue))
                 logger.debug("sigma:" + str(sigmaValue))
                 logger.debug("observationProb:" + str(observationProb))
@@ -53,7 +53,8 @@ class FaultRecoveryMCMC:
                 returns = pm.Normal('out', mu=observationProb, sigma=self.sigmaMCMC)  # df
             except Exception as e:
                 logger.error("FR MCMC: traing failed for " + sensorID + " (" + str(e) + ") - pm.Normal")
-                traceback.print_exception(e)
+                # traceback.print_exception(e, None)
+                traceback.print_exc()
                 return
             if self.stepFunction == 0:
                 step = pm.Metropolis()
