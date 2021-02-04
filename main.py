@@ -163,7 +163,14 @@ def callback_observation():
     return Response('OK', status=200)
 
 def _call_FD_update(streamObservationID, sensorID, value):
-    value = float(value)
+    vTyoe = typeof(value)
+    if vType == str or vType == unicode:
+        try:
+            value = float(value)
+        except Exception as e:
+            logger.error("FD update failed: " + str(e))
+            return
+
     try:
         createOrDeleteVS, isValueFaulty = faultDetection.update(sensorID, value)
     except Exception as e:
