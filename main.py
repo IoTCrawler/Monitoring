@@ -103,6 +103,7 @@ def callback():
     return handle_new_sensor(data)
 
 def handle_new_sensor(data, after_init=False):
+    global sensorToObservationMap, sensorsMap
     for entity in data:
         entity = resolve_prefixes(entity)
         s = Sensor(entity)
@@ -111,7 +112,7 @@ def handle_new_sensor(data, after_init=False):
             logger.debug("FD for sensor: " + sensorID + " already running")
             continue
         if s.isFaultDetectionEnabled():
-            sleep(3.0) # why the problems first time
+            sleep(1.0) # why the problems first time
             sensorsMap[sensorID] = s
             logger.debug("start FD for sensor: " + sensorID)
             try:
@@ -124,14 +125,15 @@ def handle_new_sensor(data, after_init=False):
                     logger.debug("Sensor " + sensorID + " does not reference a StreamObservation (http://www.w3.org/ns/sosa/madeObservation)")
                     continue
                 sensorToObservationMap[streamObservationID] = s
+                logger.debug("sensorToObservationMap set for " + sensorID + " with " + streamObservationID)
                 so = get_entity(streamObservationID)
                 if so:
                     iotstreamID = so['http://purl.org/iot/ontology/iot-stream#belongsTo']['object']
                     streamToSensorMap[iotstreamID] = s
                 else:
                     logger.debug("Could not get Stream entity " + streamObservationID)
-            except KeyError:
-                logger.debug("could not determine the ID of the Quality for sensor " + sensorID + ". Detection of missing values will not be possible")
+            # except KeyError:
+            #     logger.debug("could not determine the ID of the Quality for sensor " + sensorID + ". Detection of missing values will not be possible")
             except Exception as e:
                 logger.debug("Error handling sensor " + sensorID + str(e))
         else:
@@ -152,28 +154,39 @@ def callback_observation():
 
     for entity in data:
         entity = resolve_prefixes(entity)
-        if IMPUTATION_PROPERTY_NAME in entity: # no need to process our own StreamObservation
-            print("IMPUTED ENTITY:", entity)
-            continue
+        print(entity)
+        logger.debug("still working")
+        # if IMPUTATION_PROPERTY_NAME in entity: # no need to process our own StreamObservation
+        #     print("IMPUTED ENTITY:", entity)
+        #     continue
         streamObservationID = entity['id']
+        logger.debug("still working 2")
+
+        if streamObservationID == "urn:ngsi-ld:Aarhus_Staging_10adb27d-123e-4ca8-8a59-7ab215a180f5_10adb27d-123e-4ca8-8a59-7ab215a180f5-sensor-384e46a2-80dd-481e-a9fc-cfbd512f9f43_temperature_Observation":
+            logger.debug("XXXXXXXXXXXXXX the sensor XXXXXXXXXXXXXX")
+
         if streamObservationID in sensorToObservationMap:
+            logger.debug("still working 3")
             value = entity['http://www.w3.org/ns/sosa/hasSimpleResult']['value']
             sensorID = sensorToObservationMap[streamObservationID].ID()
             ObservationCache.update(sensorID, value)
+            logger.debug("MUST UPDATE!")
             threading.Thread(target=_call_FD_update, args=(streamObservationID, sensorID, value)).start()
-        else:
-            logger.debug("Unknown Sensor Observation relation - " + streamObservationID)
+        elif streamObservationID == "urn:ngsi-ld:Aarhus_Staging_10adb27d-123e-4ca8-8a59-7ab215a180f5_10adb27d-123e-4ca8-8a59-7ab215a180f5-sensor-384e46a2-80dd-481e-a9fc-cfbd512f9f43_temperature_Observation":
+            logger.debug("HHHEEEEIIIIIRRRRR!!!!!!")
+            # logger.debug("Unknown Sensor Observation relation - " + streamObservationID)
+            pass
 
     return Response('OK', status=200)
 
 def _call_FD_update(streamObservationID, sensorID, value):
-    vTyoe = typeof(value)
-    if vType == str or vType == unicode:
-        try:
-            value = float(value)
-        except Exception as e:
-            logger.error("FD update failed: " + str(e))
-            return
+    # vTyoe = typeof(value)
+    # if vType == str or vType == unicode:
+    #     try:
+    #         value = float(value)
+    #     except Exception as e:
+    #         logger.error("FD update failed: " + str(e))
+    #         return
 
     try:
         createOrDeleteVS, isValueFaulty = faultDetection.update(sensorID, value)
@@ -219,6 +232,7 @@ def _FR_callback(sensor, imputeValue):
 @bp.route('/callback/qoi', methods=['POST'])
 def callback_qoi():
     data = request.get_json()
+    # print(data)
     # check if notification which might contain other entities
     ngsi_type = ngsi_ld.ngsi_parser.get_type(data)
     if ngsi_type is NGSI_Type.Notification:
@@ -229,10 +243,12 @@ def callback_qoi():
     for entity in data:
         entity = resolve_prefixes(entity)
         qoiID = entity['id']
+        # if qoiID == "urn:ngsi-ld:QoI:urn:ngsi-ld:Aarhus_Staging_10adb27d-123e-4ca8-8a59-7ab215a180f5_10adb27d-123e-4ca8-8a59-7ab215a180f5-sensor-384e46a2-80dd-481e-a9fc-cfbd512f9f43_temperature":
+        #     logger.debug("XXXXXXXXXXXXXX QOI Sensor XXXXXXXXXXXXXX")
         if not 'https://w3id.org/iot/qoi#frequency' in entity:
             # the meta-data for this sensor did not specify an update interval
             # impossible to dermine if a observation is missing
-            logger.debug("QoI has no frequency: " + qoiID)
+            # logger.debug("QoI has no frequency: " + qoiID)
             continue
         sensorID = None
         if qoiID in qualityToStreamMap:
@@ -389,7 +405,6 @@ def datasourceManagerInitialised():
         # print("found sensor", sID)
         # print(sensors[sID])
         sensor_list.append(sensors[sID])
-    sleep(10.0)
     handle_new_sensor(sensor_list, True)
 
 if __name__ == "__main__":
