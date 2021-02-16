@@ -154,28 +154,28 @@ def callback_observation():
 
     for entity in data:
         entity = resolve_prefixes(entity)
-        print(entity)
-        logger.debug("still working")
+        # logger.debug("still working")
         # if IMPUTATION_PROPERTY_NAME in entity: # no need to process our own StreamObservation
         #     print("IMPUTED ENTITY:", entity)
         #     continue
         streamObservationID = entity['id']
-        logger.debug("still working 2")
+        # logger.debug("still working 2")
 
-        if streamObservationID == "urn:ngsi-ld:Aarhus_Staging_10adb27d-123e-4ca8-8a59-7ab215a180f5_10adb27d-123e-4ca8-8a59-7ab215a180f5-sensor-384e46a2-80dd-481e-a9fc-cfbd512f9f43_temperature_Observation":
-            logger.debug("XXXXXXXXXXXXXX the sensor XXXXXXXXXXXXXX")
+        # if streamObservationID == "urn:ngsi-ld:Aarhus_Staging_10adb27d-123e-4ca8-8a59-7ab215a180f5_10adb27d-123e-4ca8-8a59-7ab215a180f5-sensor-384e46a2-80dd-481e-a9fc-cfbd512f9f43_temperature_Observation":
+        #     logger.debug("XXXXXXXXXXXXXX the sensor XXXXXXXXXXXXXX")
+        #     print(entity)
 
         if streamObservationID in sensorToObservationMap:
-            logger.debug("still working 3")
+            # logger.debug("still working 3")
             value = entity['http://www.w3.org/ns/sosa/hasSimpleResult']['value']
             sensorID = sensorToObservationMap[streamObservationID].ID()
             ObservationCache.update(sensorID, value)
-            logger.debug("MUST UPDATE!")
+            # logger.debug("MUST UPDATE!")
             threading.Thread(target=_call_FD_update, args=(streamObservationID, sensorID, value)).start()
-        elif streamObservationID == "urn:ngsi-ld:Aarhus_Staging_10adb27d-123e-4ca8-8a59-7ab215a180f5_10adb27d-123e-4ca8-8a59-7ab215a180f5-sensor-384e46a2-80dd-481e-a9fc-cfbd512f9f43_temperature_Observation":
-            logger.debug("HHHEEEEIIIIIRRRRR!!!!!!")
-            # logger.debug("Unknown Sensor Observation relation - " + streamObservationID)
-            pass
+        # elif streamObservationID == "urn:ngsi-ld:Aarhus_Staging_10adb27d-123e-4ca8-8a59-7ab215a180f5_10adb27d-123e-4ca8-8a59-7ab215a180f5-sensor-384e46a2-80dd-481e-a9fc-cfbd512f9f43_temperature_Observation":
+        #     logger.debug("HHHEEEEIIIIIRRRRR!!!!!!")
+        #     # logger.debug("Unknown Sensor Observation relation - " + streamObservationID)
+        #     pass
 
     return Response('OK', status=200)
 
@@ -195,12 +195,12 @@ def _call_FD_update(streamObservationID, sensorID, value):
         return
     logger.debug("FD verdict:  createOrDeleteVS = %d, isValueFaulty = %d" % (createOrDeleteVS, isValueFaulty))
 
+    sensor = sensorToObservationMap[streamObservationID]
     if isValueFaulty:
         # TODO: callback for the FR? - requires to pass the sensor object, not the sensorID
-        sensor = sensorToObservationMap[streamObservationID]
         imputeValue = faultRecovery.update(sensorID, value)
         if imputeValue:
-            newStremObservation = makeStreamObservation(sensor, imputeValue)
+            newStremObservation = makeStreamObservation(sensor, imputeValue, True)
             # send to broker
             datasourceManager.replace_attr(SIMPLE_RESULT_PROPERTY_NAME, newStremObservation, streamObservationID)
             imputedStreamObservationIDs.append(streamObservationID)
@@ -209,14 +209,17 @@ def _call_FD_update(streamObservationID, sensorID, value):
 
     elif streamObservationID in imputedStreamObservationIDs:
         # sensor provide a new and valid observation, remove the imputed one
-        datasourceManager.remove_attr(streamObservationID, IMPUTATION_PROPERTY_NAME)
-        datasourceManager.remove_attr(streamObservationID, VERDICT_PROPERTY_NAME)
+        # datasourceManager.remove_attr(streamObservationID, IMPUTATION_PROPERTY_NAME)
+        # datasourceManager.remove_attr(streamObservationID, VERDICT_PROPERTY_NAME)
+
+        newStremObservation = makeStreamObservation(sensor, "N/A", False)
+        datasourceManager.replace_attr(SIMPLE_RESULT_PROPERTY_NAME, newStremObservation, streamObservationID)
         if streamObservationID in imputedStreamObservationIDs:
             imputedStreamObservationIDs.remove(streamObservationID)
     else: # value was not faulty
         #TODO: is this what is agreed upon?
-        datasourceManager.remove_attr(streamObservationID, IMPUTATION_PROPERTY_NAME)
-        datasourceManager.remove_attr(streamObservationID, VERDICT_PROPERTY_NAME)
+        # datasourceManager.remove_attr(streamObservationID, IMPUTATION_PROPERTY_NAME)
+        # datasourceManager.remove_attr(streamObservationID, VERDICT_PROPERTY_NAME)
         if streamObservationID in imputedStreamObservationIDs:
             imputedStreamObservationIDs.remove(streamObservationID)
 
@@ -288,6 +291,7 @@ def callback_qoi():
 
 def _call_FD_missingValue(qualityID, sensorID, freq):
     createOrDeleteVS, isValueMissing = faultDetection.missingValue(sensorID, freq)
+    # if sensorID == "urn:ngsi-ld:Aarhus_Staging_10adb27d-123e-4ca8-8a59-7ab215a180f5_10adb27d-123e-4ca8-8a59-7ab215a180f5-sensor-384e46a2-80dd-481e-a9fc-cfbd512f9f43":
     logger.debug("FD verdict:  createOrDeleteVS = %d, isValueMissing = %d" % (createOrDeleteVS, isValueMissing))
     sensor = sensorsMap[sensorID]
     if isValueMissing:
@@ -309,16 +313,24 @@ def _call_FD_missingValue(qualityID, sensorID, freq):
                                                                       # so this should never be true, but in case Monitoring missed it.
         # sensor provide a new and valid observation, remove the imputed one
         try:
-            datasourceManager.remove_attr(sensor.streamObservationID(), IMPUTATION_PROPERTY_NAME)
-            datasourceManager.remove_attr(sensor.streamObservationID(), VERDICT_PROPERTY_NAME)
+            # datasourceManager.remove_attr(sensor.streamObservationID(), IMPUTATION_PROPERTY_NAME)
+            # datasourceManager.remove_attr(sensor.streamObservationID(), VERDICT_PROPERTY_NAME)
+
+            newStremObservation = makeStreamObservation(sensor, "N/A", False)
+            datasourceManager.replace_attr(SIMPLE_RESULT_PROPERTY_NAME, newStremObservation, sensor.streamObservationID())
+
             imputedStreamObservationIDs.remove(sensor.streamObservationID())
         except Exception as e:
             logger.error("removing attribute failed: " + str(e))
     else: # value was not missing
         #TODO: is this what is agreed upon?
         try:
-            datasourceManager.remove_attr(sensor.streamObservationID(), IMPUTATION_PROPERTY_NAME)
-            datasourceManager.remove_attr(sensor.streamObservationID(), VERDICT_PROPERTY_NAME)
+            # datasourceManager.remove_attr(sensor.streamObservationID(), IMPUTATION_PROPERTY_NAME)
+            # datasourceManager.remove_attr(sensor.streamObservationID(), VERDICT_PROPERTY_NAME)
+
+            newStremObservation = makeStreamObservation(sensor, "N/A", False)
+            datasourceManager.replace_attr(SIMPLE_RESULT_PROPERTY_NAME, newStremObservation, sensor.streamObservationID())
+
         except Exception as e:
             logger.error("removing attribute failed: " + str(e))
 

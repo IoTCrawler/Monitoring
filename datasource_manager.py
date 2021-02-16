@@ -117,10 +117,13 @@ class DatasourceManager:
         return self.subscriptions
 
     def del_all_FD_subscriptions(self):
-        all_subscriptions = broker_interface.get_all_subscriptions()
-        # logger.debug("Broker has " + str(len(all_subscriptions)) + " subscribtions at the moment")
-        for subscription in all_subscriptions:
-            id = subscription['id']
-            if id.startswith("urn:ngsi-ld:Subscription:FD_"):
-                logger.debug("Deleting subscription with ID " + id)
-                self.del_subscription(subscription)
+        try:
+            all_subscriptions = broker_interface.get_all_subscriptions()
+            # logger.debug("Broker has " + str(len(all_subscriptions)) + " subscribtions at the moment")
+            for subscription in all_subscriptions:
+                id = subscription['id']
+                if id.startswith("urn:ngsi-ld:Subscription:FD_"):
+                    logger.debug("Deleting subscription with ID " + id)
+                    self.del_subscription(subscription)
+        except:
+            pass

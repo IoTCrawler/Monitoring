@@ -4,8 +4,10 @@ import dateutil
 import datetime
 import json
 
-IMPUTATION_PROPERTY_NAME = "http://www.fault-detection.de/hasEstimatedResult" # TODO: Change to new address
-VERDICT_PROPERTY_NAME = "http://www.fault-detection.de/hasVerdict"
+# IMPUTATION_PROPERTY_NAME = "http://www.fault-detection.de/hasEstimatedResult" # TODO: Change to new address
+IMPUTATION_PROPERTY_NAME = "https://w3id.org/iot/fd/hasEstimatedResult" # TODO: Change to new address
+# VERDICT_PROPERTY_NAME = "http://www.fault-detection.de/hasVerdict"
+VERDICT_PROPERTY_NAME = "https://w3id.org/iot/fd/hasVerdict"
 SIMPLE_RESULT_PROPERTY_NAME = "http://www.w3.org/ns/sosa/hasSimpleResult"
 
 # needed? Monitoring is "controlled" by the MDR, not an API
@@ -105,31 +107,6 @@ def _makeResultProperty(value, observedAt, isImputed=False):
     },
     "%s" : {
       "type" : "Property",
-      "value": "faulty"
-    },
-    "@context": [
-        "http://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"
-    ] }"""
-    # } """
-
-    resultType = IMPUTATION_PROPERTY_NAME if isImputed else "http://www.w3.org/ns/sosa/hasSimpleResult"
-    return template % (resultType, value, observedAt, VERDICT_PROPERTY_NAME)
-
-def makeStreamObservation(sensor, value):
-
-    # import: the stream ID has to be set before using the sensor.setStreamID() method
-    # TODO: do we provide both, the original and imputed, values in case auf faulty observation?
-
-    dt = datetime.datetime.now()
-    dt = dt.replace(microsecond=0)
-    dt_iso = dt.isoformat() + "Z" # the MDR requires the Z at the end
-    ngsi_msg = _makeResultProperty(value, dt_iso, True)
-    # print(ngsi_msg)
-    return json.loads(ngsi_msg)
-
-def makeFDVerdict(verdict="ok"):
-    template = """{"%s" : {
-      "type" : "Property",
       "value": "%s"
     },
     "@context": [
@@ -137,5 +114,31 @@ def makeFDVerdict(verdict="ok"):
     ] }"""
     # } """
 
-    # resultType = IMPUTATION_PROPERTY_NAME if isImputed else "http://www.w3.org/ns/sosa/hasSimpleResult"
-    return template % (VERDICT_PROPERTY_NAME, verdict)
+    resultType = IMPUTATION_PROPERTY_NAME #if isImputed else "http://www.w3.org/ns/sosa/hasSimpleResult"
+    verdictValue = "faulty" if isImputed else "ok"
+    return template % (resultType, value, observedAt, VERDICT_PROPERTY_NAME, verdictValue)
+
+def makeStreamObservation(sensor, value, isImputed=False):
+
+    # import: the stream ID has to be set before using the sensor.setStreamID() method
+    # TODO: do we provide both, the original and imputed, values in case auf faulty observation?
+
+    dt = datetime.datetime.now()
+    dt = dt.replace(microsecond=0)
+    dt_iso = dt.isoformat() + "Z" # the MDR requires the Z at the end
+    ngsi_msg = _makeResultProperty(value, dt_iso, isImputed)
+    # print(ngsi_msg)
+    return json.loads(ngsi_msg)
+
+# def makeFDVerdict(verdict="ok"):
+#     template = """{"%s" : {
+#       "type" : "Property",
+#       "value": "%s"
+#     },
+#     "@context": [
+#         "http://uri.etsi.org/ngsi-ld/v1/ngsi-ld-core-context.jsonld"
+#     ] }"""
+#     # } """
+#
+#     # resultType = IMPUTATION_PROPERTY_NAME if isImputed else "http://www.w3.org/ns/sosa/hasSimpleResult"
+#     return template % (VERDICT_PROPERTY_NAME, verdict)
