@@ -7,7 +7,7 @@ fieldNames = ["timestamp","humidity","temperature","barometric_pressure","batter
 fieldNamesMap = {"humidity":"humidity in % (SHT31 - Humidity)","temperature":"air temperature in ºC (SHT31 - Temperature)","barometric_pressure":"barometric pressure in K Pa (MPL3115A2 - Barometric Pressure)","battery":"battery in % (Battery SCK)","eCO2":"eCO2 in ppm (AMS CCS811 - eCO2)","TVOC":"TVOC in ppb (AMS CCS811 - TVOC)","light":"light in Lux (BH1730FVC)","PM_1":"PM 1 in ug/m3 (PMS5003_AVG-PM1)","noise":"noise in dBA (ICS43432 - Noise)","PM_10":"PM 10 in ug/m3 (PMS5003_AVG-PM10)","PM_2.5":"PM 2.5 in ug/m3 (PMS5003_AVG-PM2.5)"}
 sensorNameMap = {13003: "10adb27d-123e-4ca8-8a59-7ab215a180f5", 13004: "5a94c24c-12f1-48a1-8a42-9b31011bec1b", 13005: "a7ba136d-9a06-432b-9ec4-175a018bfd5", 13006: "f0cf1a0b-5d7c-4501-acad-f768a9dba3c5"}
 # sensorNameTemplate = "urn_ngsi-ld_Aarhus_Staging_{}_{}_{}.csv"
-sensorNameTemplate = "urn_ngsi-ld_Aarhus_Staging_{}_{}.csv"
+sensorNameTemplate = "urn_ngsi-ld_Sensor_Aarhus_Staging_{}_{}.csv"
 writers = {}
 
 if __name__ == '__main__':
