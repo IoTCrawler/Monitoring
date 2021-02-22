@@ -298,7 +298,7 @@ def _call_FD_missingValue(qualityID, sensorID, freq):
         imputeValue = faultRecovery.update(sensorID, datetime.datetime.now().isoformat())
         if imputeValue != None:
             logger.debug("will impute value: " + str(imputeValue))
-            newStremObservation = makeStreamObservation(sensor, imputeValue)
+            newStremObservation = makeStreamObservation(sensor, imputeValue, True)
             datasourceManager.replace_attr(SIMPLE_RESULT_PROPERTY_NAME, newStremObservation, sensor.streamObservationID())
             imputedStreamObservationIDs.append(sensor.streamObservationID())
         else:
