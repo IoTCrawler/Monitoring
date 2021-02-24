@@ -400,6 +400,11 @@ def reinit():
     threading.Thread(target=datasourceManager.reinitialise, args=(datasourceManagerInitialised,)).start()
     return "initialising started. This may take a moment."
 
+@bp.route('/resub', methods=['GET'])
+def resub():
+    datasourceManager.resubscribe()
+    return "recreating subscriptions"
+
 app = Flask(__name__)
 app.secret_key = 'e3645c25b6d5bf67ae6da68c824e43b530e0cb43b0b9432c'
 app.register_blueprint(bp, url_prefix='/monitoring')

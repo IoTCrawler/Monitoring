@@ -50,6 +50,11 @@ class DatasourceManager:
         self.observableproperties = {}
         self.initialise(finishCallback)
 
+    def resubscribe(self):
+        self.del_all_FD_subscriptions()
+        self.subscriptions = {}
+        broker_interface.initialise_subscriptions(self.subscriptions, (NGSI_Type.Sensor, NGSI_Type.StreamObservation, NGSI_Type.QoI))
+
     def update(self, ngsi_data, sendIt=False):
         ngsi_id, ngsi_type = ngsi_parser.get_IDandType(ngsi_data)
         # check type
